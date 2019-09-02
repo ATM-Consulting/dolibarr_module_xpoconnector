@@ -349,7 +349,10 @@ class modXPOConnector extends DolibarrModules
 		require dol_buildpath('/xpoconnector/script/create-maj-base.php');
 
 		$result=$this->_load_tables('/xpoconnector/sql/');
-
+		$extrafields = new ExtraFields($this->db);
+		$ret = $extrafields->addExtraField('xpo_uc_code', 'Code emballage UC', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_package_type:label:rowid::active=1' => null)), 0, '', -1, 0, '', '', 'xpoconnector@xpoconnector');
+		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:label:rowid::active=1' => null)), 0, '', -1, 0, '', '', 'xpoconnector@xpoconnector');
+		//TODO Rediscuter avec Geo
 		return $this->_init($sql, $options);
 	}
 
