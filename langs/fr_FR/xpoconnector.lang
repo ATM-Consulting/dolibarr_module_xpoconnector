@@ -1,0 +1,54 @@
+Module104844Name = XPOConnector
+Module104844Desc = XPOConnector Description
+
+ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.fr" target="_blank">ATM Consulting</a><br>Vous pouvez retrouver la documentation sur notre <a href="http://wiki.atm-consulting.fr/index.php/Accueil" target="_blank">wiki</a><br><br>Pour toute question technique ou retour, contactez-nous sur <a href="mailto:support@atm-consulting.fr">support@atm-consulting.fr</a><br><br>Pour toute question commerciale, contactez-nous sur <a href="mailto:contact@atm-consulting.fr">contact@atm-consulting.fr</a> ou au +33 9 77 19 50 70<br><br>Retrouvez nos autres modules sur <a href="http://www.dolistore.com/search.php?orderby=position&orderway=desc&search_query=atm&submit_search=Rechercher" target="_blank">Dolistore</a>
+
+XPOConnectorSetup = Configuration du module XPOConnector
+XPOConnectorAbout = A propos du module XPOConnector
+
+XPOConnector=XPOConnector
+AbricotNeedUpdate=Le module abricot doit être mis à jour
+
+# SETUP
+ParamLabel=Nom du paramètre
+ParamDesc=Une description si besoin
+ParamHelp=Le contenu de l'aide
+
+# MENU
+TopMenuXPOConnector=XPOConnector
+
+# STATUS
+XPOConnectorStatusCanceled=Abandonnée (fermée)
+XPOConnectorStatusDraft=Brouillon (à valider)
+XPOConnectorStatusValidated=Validée (à accepter)
+XPOConnectorStatusRefused=Refusée (fermée)
+XPOConnectorStatusAccepted=Acceptée (fermée)
+
+XPOConnectorStatusShortCanceled=Abandonnée
+XPOConnectorStatusShortDraft=Brouillon
+XPOConnectorStatusShortValidated=Validée
+XPOConnectorStatusShortRefused=Refusée
+XPOConnectorStatusShortAccepted=Acceptée
+
+# LIST
+XPOConnectorList=Liste XPOConnector
+NoXPOConnector=(vide)
+
+# CARD
+NewXPOConnector=Création XPOConnector
+XPOConnectorCard=Fiche XPOConnector
+
+XPOConnectorModify=Modifier
+XPOConnectorClone=Cloner
+XPOConnectorValid=Valider
+XPOConnectorAccept=Accepter
+XPOConnectorRefuse=Refuser
+XPOConnectorReopen=Rouvrir
+XPOConnectorCancel=Abandonner
+XPOConnectorDelete=Supprimer
+
+ConfirmValidateXPOConnectorTitle=Confirmation d'activation
+ConfirmValidateXPOConnectorBody=Souhaitez-vous vraiment activer cette fiche XPOConnector %s ?
+
+ConfirmDeleteXPOConnectorTitle=Confirmation de suppression
+ConfirmDeleteXPOConnectorBody=Souhaitez-vous vraiment supprimer cette fiche XPOConnector %s ?
