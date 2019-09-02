@@ -95,7 +95,7 @@ class modXPOConnector extends DolibarrModules
 		$this->dirs = array();
 
 		// Config pages. Put here list of php page, stored into xpoconnector/admin directory, to use to setup module.
-		$this->config_page_url = array("xpoconnector_setup.php@xpoconnector");
+		//$this->config_page_url = array("xpoconnector_setup.php@xpoconnector");
 
 		// Dependencies
 		$this->hidden = false;			// A condition to hide module
@@ -146,21 +146,29 @@ class modXPOConnector extends DolibarrModules
         	$conf->xpoconnector->enabled=0;
         }
 		$this->dictionaries=array();
-        /* Example:
+
         if (! isset($conf->xpoconnector->enabled)) $conf->xpoconnector->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
             'langs'=>'xpoconnector@xpoconnector',
-            'tabname'=>array(MAIN_DB_PREFIX."table1",MAIN_DB_PREFIX."table2",MAIN_DB_PREFIX."table3"),		// List of tables we want to see into dictonnary editor
-            'tablib'=>array("Table1","Table2","Table3"),													// Label of tables
-            'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table1 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table2 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table3 as f'),	// Request to select fields
-            'tabsqlsort'=>array("label ASC","label ASC","label ASC"),																					// Sort order
-            'tabfield'=>array("code,label","code,label","code,label"),																					// List of fields (result of select to show dictionary)
-            'tabfieldvalue'=>array("code,label","code,label","code,label"),																				// List of fields (list of fields to edit a record)
-            'tabfieldinsert'=>array("code,label","code,label","code,label"),																			// List of fields (list of fields for insert)
-            'tabrowid'=>array("rowid","rowid","rowid"),																									// Name of columns with primary key (try to always name it 'rowid')
-            'tabcond'=>array($conf->xpoconnector->enabled,$conf->xpoconnector->enabled,$conf->xpoconnector->enabled)												// Condition to show each dictionary
+            'tabname'=>array(MAIN_DB_PREFIX."c_xpo_package_type",
+							 MAIN_DB_PREFIX."c_xpo_palet_type"),		// List of tables we want to see into dictonnary editor
+            'tablib'=>array("PackageType",
+							"PaletType"),													// Label of tables
+            'tabsql'=>array('SELECT xpt.rowid, xpt.code, xpt.label, xpt.unladen_weight, xpt.height, xpt.length, xpt.width, xpt.entity, xpt.active FROM '.MAIN_DB_PREFIX.'c_xpo_package_type as xpt',
+							'SELECT xpalt.rowid, xpalt.code, xpalt.label, xpalt.unladen_weight, xpalt.height, xpalt.length, xpalt.width, xpalt.entity, xpalt.active FROM '.MAIN_DB_PREFIX.'c_xpo_palet_type as xpalt'),	// Request to select fields
+            'tabsqlsort'=>array("label ASC","label ASC"),																					// Sort order
+            'tabfield'=>array("code,label,unladen_weight,height,length,width",
+							  "code,label,unladen_weight,height,length,width"),																					// List of fields (result of select to show dictionary)
+            'tabfieldvalue'=>array("code,label,unladen_weight,height,length,width",
+								   "code,label,unladen_weight,height,length,width"),																				// List of fields (list of fields to edit a record)
+            'tabfieldinsert'=>array("code,label,unladen_weight,height,length,width",
+									"code,label,unladen_weight,height,length,width"),																			// List of fields (list of fields for insert)
+            'tabrowid'=>array("rowid",
+							  "rowid"),																									// Name of columns with primary key (try to always name it 'rowid')
+            'tabcond'=>array($conf->xpoconnector->enabled,
+							 $conf->xpoconnector->enabled)												// Condition to show each dictionary
         );
-        */
+
 
         // Boxes
 		// Add here list of php file(s) stored in core/boxes that contains class to show a box.

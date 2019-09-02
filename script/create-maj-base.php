@@ -36,3 +36,10 @@ dol_include_once('/xpoconnector/class/xpoconnector.class.php');
 $o=new XPOConnector($db);
 $o->init_db_by_vars();
 */
+dol_include_once('/xpoconnector/class/xpopackagetype.class.php');
+dol_include_once('/xpoconnector/class/xpopalettype.class.php');
+
+$o=new XPOPackageType($db);
+$o->init_db_by_vars();
+$o=new XPOPaletType($db);
+$o->init_db_by_vars();

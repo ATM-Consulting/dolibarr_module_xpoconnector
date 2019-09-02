@@ -64,7 +64,7 @@ class XPOConnector extends SeedObject
 	public $element = 'xpoconnector';
 
 	/** @var int $isextrafieldmanaged Enable the fictionalises of extrafields */
-    public $isextrafieldmanaged = 1;
+    public $isextrafieldmanaged = 0;
 
     /** @var int $ismultientitymanaged 0=No test on entity, 1=Test with field entity, 2=Test with link by societe */
     public $ismultientitymanaged = 1;
