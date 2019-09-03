@@ -69,8 +69,8 @@ class ActionsXPOConnector
 	}
 	public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager)
 	{
-		global $langs;
-		if (in_array('productcard', explode(':', $parameters['context'])))
+		global $langs, $conf;
+		if (in_array('productcard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT))
 		{
 			print '<a class="butAction" href="/dolibarr/acobal/dolibarr/htdocs/product/card.php?action=regenerateXPO&id='.$object->id.'">'.$langs->trans('ResendXPOFile').'</a>';
 		}
