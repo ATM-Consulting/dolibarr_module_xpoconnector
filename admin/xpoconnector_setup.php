@@ -49,7 +49,17 @@ $action = GETPOST('action', 'alpha');
 if (preg_match('/set_(.*)/', $action, $reg))
 {
 	$code=$reg[1];
-	if (dolibarr_set_const($db, $code, GETPOST($code), 'chaine', 0, '', $conf->entity) > 0)
+	if ($code == 'XPOCONNECTOR_FTP_CONF')
+	{
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_HOST", GETPOST("XPOCONNECTOR_FTP_HOST"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_PORT", GETPOST("XPOCONNECTOR_FTP_PORT"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_USER", GETPOST("XPOCONNECTOR_FTP_USER"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_PASS", GETPOST("XPOCONNECTOR_FTP_PASS"), 'chaine', 0, '', $conf->entity);
+
+		header("Location: ".$_SERVER["PHP_SELF"]);
+		exit;
+	}
+	else if (dolibarr_set_const($db, $code, GETPOST($code), 'chaine', 0, '', $conf->entity) > 0)
 	{
 		header("Location: ".$_SERVER["PHP_SELF"]);
 		exit;
@@ -106,7 +116,8 @@ if(!function_exists('setup_print_title')){
     exit;
 }
 
-setup_print_title("Parameters");
+setup_print_title("Product");
+setup_print_on_off('XPOCONNECTOR_ENABLE_PRODUCT');
 $var=!$var;
 print '<tr '.$bc[$var].'>';
 print '<td>'.$langs->trans('XPOCONNECTOR_PRODUCT_CATEGORY').'</td>';
@@ -119,6 +130,22 @@ print '<input type="hidden" name="action" value="set_XPOCONNECTOR_PRODUCT_CATEGO
 print $form->select_all_categories('product', $conf->global->XPOCONNECTOR_PRODUCT_CATEGORY, 'XPOCONNECTOR_PRODUCT_CATEGORY');
 print '<input type="submit" class="butAction" value="'.$langs->trans("Modify").'">';
 print '</form>';
+
+setup_print_title("FTP");
+print '<tr id ="FtpXPOConf" ' . $bc[$var] . '><td>' . $langs->trans("XPOCONNECTOR_FTP_CONF") . '</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="400">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_XPOCONNECTOR_FTP_CONF">';
+print $langs->trans("XPOCONNECTOR_FTP_HOST").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_HOST" value="'.$conf->global->XPOCONNECTOR_FTP_HOST.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_PORT").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_PORT" value="'.$conf->global->XPOCONNECTOR_FTP_PORT.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_USER").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_USER" value="'.$conf->global->XPOCONNECTOR_FTP_USER.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_PASS").' : <input type="password" size="30" name="XPOCONNECTOR_FTP_PASS" value="'.$conf->global->XPOCONNECTOR_FTP_PASS.'"><BR>';
+print '<BR><input type="submit" class="butAction" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td>';
+print '</tr>';
 
 print '</table>';
 

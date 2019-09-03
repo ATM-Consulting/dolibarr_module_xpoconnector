@@ -138,7 +138,7 @@ class InterfaceXPOConnectortrigger
 
 
         // Products
-      	if ($action == 'PRODUCT_CREATE' || $action == 'PRODUCT_MODIFY' || $action == 'PRODUCT_DELETE') {
+      	if (!empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT) && ($action == 'PRODUCT_CREATE' || $action == 'PRODUCT_MODIFY' || $action == 'PRODUCT_DELETE')) {
             dol_syslog(
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
             );
@@ -183,7 +183,7 @@ class InterfaceXPOConnectortrigger
 			$res = $xpoConnector->generateCSV($object);
 			if($res < 0) return 0;
 
-			//Dépôt sur le FTP TODO
+			//Dépôt sur le FTP
 			$xpoConnector->moveFileToFTP();
         }
 

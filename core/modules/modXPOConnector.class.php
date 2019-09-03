@@ -353,8 +353,8 @@ class modXPOConnector extends DolibarrModules
 		/*
 		 * Produits
 		 */
-		$ret = $extrafields->addExtraField('xpo_uc_code', 'Code emballage UC', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_package_type:label:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
-		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:label:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
+		$ret = $extrafields->addExtraField('xpo_uc_code', 'Code emballage UC', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_package_type:code:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
+		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:code:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
 		$ret = $extrafields->addExtraField('prod_per_col', 'Nb produits par colis (UC)', 'double', 1, '', 'product', 0, 0, '', '', 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
 
 		//TODO Rediscuter avec Geo

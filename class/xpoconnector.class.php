@@ -34,6 +34,7 @@ class XPOConnector extends SeedObject
 	public $TSchema;
 	public $upload_dir;
 	public $upload_path;
+	public $filename;
 
     public function __construct()
     {
@@ -67,7 +68,9 @@ class XPOConnector extends SeedObject
 				return -1;
 			}
 		}
-		$this->upload_path = $this->upload_dir.'/'.$object->ref.'-'.time().'.csv';
+		$this->filename = $object->ref.'-'.time().'.csv';
+		$this->upload_path = $this->upload_dir.'/'.$this->filename;
+
 		//On génère le fichier CSV
 		$f_out = fopen($this->upload_path, 'a');
 		if($f_out == false) {
@@ -77,6 +80,37 @@ class XPOConnector extends SeedObject
 		fputcsv($f_out, $line, ";");
 		fclose($f_out);
 		return 1;
+	}
+
+	public function moveFileToFTP() {
+    	global $conf, $langs;
+    	if(!empty($this->upload_path)) {
+			$target_folder = $this->filename;//to define
+			$ftp_host = (empty($conf->global->XPOCONNECTOR_FTP_HOST)) ? "" : $conf->global->XPOCONNECTOR_FTP_HOST;
+			$ftp_port = (empty($conf->global->XPOCONNECTOR_FTP_PORT)) ? 21 : $conf->global->XPOCONNECTOR_FTP_PORT;
+			$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
+			$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
+			if($co = ftp_connect($ftp_host, $ftp_port)) {
+				if(ftp_login($co, $ftp_user, $ftp_pass)) {
+					if(ftp_put($co, $target_folder, $this->upload_path, FTP_BINARY)) {
+						setEventMessage($langs->trans('FTPFileSuccess'));
+					}
+					else {
+						setEventMessage($langs->trans('FTPUploadError'), 'errors');
+					}
+				}
+				else {
+					setEventMessage($langs->trans('FTPLoginError'), 'errors');
+				}
+				ftp_close($co);
+			}
+			else {
+				setEventMessage($langs->trans('FTPConnectionError'), 'errors');
+			}
+		} else {
+    		setEventMessage($langs->trans('MissingLocalPath'), 'errors');
+		}
+
 	}
 
 }
