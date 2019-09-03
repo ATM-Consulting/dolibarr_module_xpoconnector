@@ -55,7 +55,7 @@ class XPOConnector extends SeedObject
 			else $value = $schema['value'];
 
 
-			if(!empty($schema['max_length'])) $value = substr($value,0,$schema['max_length']);
+			if(!empty($schema['max_length']) && strlen($value) > $schema['max_length']) $value = substr($value,0,$schema['max_length']);
 			$line[] = $value;
 
 		}
@@ -142,6 +142,56 @@ class XPOConnectorProduct extends XPOConnector
 							'Colis couche'=> array('max_length' => 8, 'from_object'=>0), //Non géré
 							'Couche par palette'=> array('max_length' => 8, 'from_object'=>0) //Non géré
 							);
+
+	public static function send($object){
+		global $conf;
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT) ) {
+			//Préparation du CSV
+			$xpoConnector = new XPOConnectorProduct($object->ref);
+			//TODO
+			$xpoConnector->TSchema['Activite']['value'] = '';
+			//Categorie
+			if(!empty($conf->global->XPOCONNECTOR_PRODUCT_CATEGORY)) {
+				$TCategId = GETPOST('categories');
+				if(!empty($TCategId)) {
+					foreach($TCategId as $fk_category) {
+						$categ = new Categorie($object->db);
+						$categ->fetch($fk_category);
+						$TMotherCategWays = $categ->get_all_ways();
+						if(!empty($TMotherCategWays)) {
+							foreach($TMotherCategWays as $TMotherCateg) {
+								foreach($TMotherCateg as $motherCateg) {
+									if($motherCateg->id == $conf->global->XPOCONNECTOR_PRODUCT_CATEGORY) { //On parcourt toutes les catégories, si une des catégories parentes est celle de la conf, on utilise cette categ
+										$xpoConnector->TSchema['Famille du produit']['value'] = $categ->label;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			//Info lié au colis
+			if(!empty($object->array_options['options_xpo_uc_code'])) {
+				$packageType = new XPOPackageType($object->db);
+				$packageType->fetch($object->array_options['options_xpo_uc_code']);
+				$poidsAVideColis = $packageType->unladen_weight;
+				$poidsBrut = $object->array_options["options_prod_per_col"] * $object->weight + $poidsAVideColis;
+				$xpoConnector->TSchema['Poids brut du colis']['value'] = $poidsBrut;
+				$xpoConnector->TSchema['Hauteur du colis']['value'] = $packageType->height;
+				$xpoConnector->TSchema['Longueur du colis']['value'] = $packageType->length;
+				$xpoConnector->TSchema['Largeur du colis']['value'] = $packageType->width;
+			}
+
+			//Génération du fichier CSV
+			$res = $xpoConnector->generateCSV($object);
+			if($res < 0) return 0;
+
+			//Dépôt sur le FTP
+			$xpoConnector->moveFileToFTP();
+		}
+	}
+
 }
 
 //class XPOConnectorDet extends SeedObject

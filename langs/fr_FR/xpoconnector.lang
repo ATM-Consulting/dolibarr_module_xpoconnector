@@ -67,5 +67,6 @@ FTPConnectionError=Erreur de connexion au serveur FTP XPO
 FTPLoginError=Erreur dans les logins FTP XPO
 FTPUploadError=Erreur durant l'upload du fichier (FTP XPO)
 FTPFileSuccess=Fichier transmis à XPO
+ResendXPOFile=Régénérer et transmettre le ficher à XPO
 
 

@@ -56,39 +56,25 @@ class ActionsXPOConnector
 		$this->db = $db;
 	}
 
-	/**
-	 * Overloading the doActions function : replacing the parent's function with the one below
-	 *
-	 * @param   array()         $parameters     Hook metadatas (context, etc...)
-	 * @param   CommonObject    $object        The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
-	 * @param   string          $action        Current action (if set). Generally create or edit or null
-	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
-	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
-	 */
 	public function doActions($parameters, &$object, &$action, $hookmanager)
 	{
-		$error = 0; // Error counter
-		$myvalue = 'test'; // A result value
-
-		print_r($parameters);
-		echo "action: " . $action;
-		print_r($object);
-
-		if (in_array('somecontext', explode(':', $parameters['context'])))
+		if (in_array('productcard', explode(':', $parameters['context'])) && $action=='regenerateXPO')
 		{
-		  // do something only for the context 'somecontext'
+			dol_include_once('/xpoconnector/class/xpoconnector.class.php');
+			dol_include_once('/xpoconnector/class/xpopackagetype.class.php');
+			XPOConnectorProduct::send($object);
 		}
 
-		if (! $error)
+		return 0;
+	}
+	public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs;
+		if (in_array('productcard', explode(':', $parameters['context'])))
 		{
-			$this->results = array('myreturn' => $myvalue);
-			$this->resprints = 'A text to show';
-			return 0; // or return 1 to replace standard code
+			print '<a class="butAction" href="/dolibarr/acobal/dolibarr/htdocs/product/card.php?action=regenerateXPO&id='.$object->id.'">'.$langs->trans('ResendXPOFile').'</a>';
 		}
-		else
-		{
-			$this->errors[] = 'Error message';
-			return -1;
-		}
+
+		return 0;
 	}
 }
