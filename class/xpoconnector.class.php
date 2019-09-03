@@ -44,7 +44,7 @@ class XPOConnector extends SeedObject
     	global $langs;
     	$error = 0;
 
-    	dol_include_once('/core/libattribute with bracket/files.lib.php');
+    	dol_include_once('/core/lib/files.lib.php');
     	$line = array();
     	//On formate le schema en une ligne
 		foreach($this->TSchema as $key => $schema) {
@@ -55,7 +55,6 @@ class XPOConnector extends SeedObject
 
 
 			if(!empty($schema['max_length'])) $value = substr($value,0,$schema['max_length']);
-			var_dump(array($key,$schema['max_length'], $value));
 			$line[] = $value;
 
 		}
