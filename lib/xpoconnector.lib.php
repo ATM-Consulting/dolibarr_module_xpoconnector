@@ -38,10 +38,10 @@ function xpoconnectorAdminPrepareHead()
     $head[$h][1] = $langs->trans("Parameters");
     $head[$h][2] = 'settings';
     $h++;
-    $head[$h][0] = dol_buildpath("/xpoconnector/admin/xpoconnector_extrafields.php", 1);
-    $head[$h][1] = $langs->trans("ExtraFields");
-    $head[$h][2] = 'extrafields';
-    $h++;
+//    $head[$h][0] = dol_buildpath("/xpoconnector/admin/xpoconnector_extrafields.php", 1);
+//    $head[$h][1] = $langs->trans("ExtraFields");
+//    $head[$h][2] = 'extrafields';
+//    $h++;
     $head[$h][0] = dol_buildpath("/xpoconnector/admin/xpoconnector_about.php", 1);
     $head[$h][1] = $langs->trans("About");
     $head[$h][2] = 'about';

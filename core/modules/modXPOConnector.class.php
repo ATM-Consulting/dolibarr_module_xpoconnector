@@ -88,14 +88,14 @@ class modXPOConnector extends DolibarrModules
 		//							'dir' => array('output' => 'othermodulename'),      // To force the default directories names
 		//							'workflow' => array('WORKFLOW_MODULE1_YOURACTIONTYPE_MODULE2'=>array('enabled'=>'! empty($conf->module1->enabled) && ! empty($conf->module2->enabled)', 'picto'=>'yourpicto@xpoconnector')) // Set here all workflow context managed by module
 		//                        );
-		$this->module_parts = array();
+		$this->module_parts = array('triggers' => 1);
 
 		// Data directories to create when module is enabled.
 		// Example: this->dirs = array("/xpoconnector/temp");
 		$this->dirs = array();
 
 		// Config pages. Put here list of php page, stored into xpoconnector/admin directory, to use to setup module.
-		//$this->config_page_url = array("xpoconnector_setup.php@xpoconnector");
+		$this->config_page_url = array("xpoconnector_setup.php@xpoconnector");
 
 		// Dependencies
 		$this->hidden = false;			// A condition to hide module
@@ -350,8 +350,13 @@ class modXPOConnector extends DolibarrModules
 
 		$result=$this->_load_tables('/xpoconnector/sql/');
 		$extrafields = new ExtraFields($this->db);
-		$ret = $extrafields->addExtraField('xpo_uc_code', 'Code emballage UC', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_package_type:label:rowid::active=1' => null)), 0, '', -1, 0, '', '', 'xpoconnector@xpoconnector');
-		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:label:rowid::active=1' => null)), 0, '', -1, 0, '', '', 'xpoconnector@xpoconnector');
+		/*
+		 * Produits
+		 */
+		$ret = $extrafields->addExtraField('xpo_uc_code', 'Code emballage UC', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_package_type:label:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
+		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:label:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
+		$ret = $extrafields->addExtraField('prod_per_col', 'Nb produits par colis (UC)', 'double', 1, '', 'product', 0, 0, '', '', 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
+
 		//TODO Rediscuter avec Geo
 		return $this->_init($sql, $options);
 	}

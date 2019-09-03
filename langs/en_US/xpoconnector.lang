@@ -5,3 +5,4 @@ ATMAbout = This module has been developed by <a href="http://www.atm-consulting.
 
 XPOConnectorSetup = XPOConnector module setup
 XPOConnectorAbout = About XPOConnector
+XPOCONNECTOR_PRODUCT_CATEGORY=Catégorie correspondant à la famille du produit XPO

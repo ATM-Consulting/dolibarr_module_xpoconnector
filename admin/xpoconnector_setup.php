@@ -107,22 +107,18 @@ if(!function_exists('setup_print_title')){
 }
 
 setup_print_title("Parameters");
+$var=!$var;
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans('XPOCONNECTOR_PRODUCT_CATEGORY').'</td>';
 
-// Example with a yes / no select
-setup_print_on_off('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc');
-
-// Example with imput
-setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
-
-// Example with color
-setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc', array('type'=>'color'), 'input', 'ParamHelp');
-
-// Example with placeholder
-//setup_print_input_form_part('CONSTNAME',$langs->trans('ParamLabel'),'ParamDesc',array('placeholder'=>'http://'),'input','ParamHelp');
-
-// Example with textarea
-//setup_print_input_form_part('CONSTNAME',$langs->trans('ParamLabel'),'ParamDesc',array(),'textarea');
-
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="center" width="500">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_XPOCONNECTOR_PRODUCT_CATEGORY">';
+print $form->select_all_categories('product', $conf->global->XPOCONNECTOR_PRODUCT_CATEGORY, 'XPOCONNECTOR_PRODUCT_CATEGORY');
+print '<input type="submit" class="butAction" value="'.$langs->trans("Modify").'">';
+print '</form>';
 
 print '</table>';
 
