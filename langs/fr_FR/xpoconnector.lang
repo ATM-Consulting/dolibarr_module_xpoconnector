@@ -68,5 +68,6 @@ FTPLoginError=Erreur dans les logins FTP XPO
 FTPUploadError=Erreur durant l'upload du fichier (FTP XPO)
 FTPFileSuccess=Fichier transmis à XPO
 ResendXPOFile=Regénérer et transmettre le ficher à XPO
+XPOFiles = Fichiers XPO
 
 

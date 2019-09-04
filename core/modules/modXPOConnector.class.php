@@ -139,7 +139,7 @@ class modXPOConnector extends DolibarrModules
 		// 'stock'            to add a tab in stock view
 		// 'thirdparty'       to add a tab in third party view
 		// 'user'             to add a tab in user view
-        $this->tabs = array();
+        $this->tabs = array('product:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_PRODUCT:/xpoconnector/product_xpofiles.php?id=__ID__');
 
         // Dictionaries
 	    if (! isset($conf->xpoconnector->enabled))
