@@ -20,8 +20,8 @@ if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, 
 $offset = $conf->liste_limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
-if (! $sortorder) $sortorder="ASC";
-if (! $sortfield) $sortfield="position_name";
+if (! $sortorder) $sortorder="DESC";
+if (! $sortfield) $sortfield="date";
 $object = new Product($db);
 
 if ($id > 0 || ! empty($ref))
