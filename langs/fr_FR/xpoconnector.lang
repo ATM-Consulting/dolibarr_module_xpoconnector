@@ -57,17 +57,19 @@ Unladen_weight=Poids à vide
 PackageType=Type de colis
 PaletType=Type de palette
 XPOCONNECTOR_ENABLE_PRODUCT=Activer la gestion des produits
+XPOCONNECTOR_ENABLE_SUPPLIERORDER=Activer la gestion des commandes fournisseurs
 XPOCONNECTOR_FTP_CONF=Configuration de la connexion FTP
 XPOCONNECTOR_FTP_USER=Utilisateur
 XPOCONNECTOR_FTP_PASS=Mot de passe
 XPOCONNECTOR_FTP_HOST=Hôte
 XPOCONNECTOR_FTP_PORT=Port
+XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD=Extrafield ligne de commande fournisseur correspondant à "Date de réception prévue"
 MissingLocalPath=Chemin du fichier local vide pour le transfert FTP vers XPO
 FTPConnectionError=Erreur de connexion au serveur FTP XPO
 FTPLoginError=Erreur dans les logins FTP XPO
 FTPUploadError=Erreur durant l'upload du fichier (FTP XPO)
 FTPFileSuccess=Fichier transmis à XPO
-ResendXPOFile=Regénérer et transmettre le ficher à XPO
+ResendXPOFile=Générer et transmettre le ficher à XPO
 XPOFiles = Fichiers XPO
 
 

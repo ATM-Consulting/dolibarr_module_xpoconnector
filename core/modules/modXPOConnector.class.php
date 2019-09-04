@@ -89,7 +89,7 @@ class modXPOConnector extends DolibarrModules
 		//							'workflow' => array('WORKFLOW_MODULE1_YOURACTIONTYPE_MODULE2'=>array('enabled'=>'! empty($conf->module1->enabled) && ! empty($conf->module2->enabled)', 'picto'=>'yourpicto@xpoconnector')) // Set here all workflow context managed by module
 		//                        );
 		$this->module_parts = array('triggers' => 1
-									,'hooks' => array('productcard')
+									,'hooks' => array('productcard','ordersuppliercard')
 									);
 
 		// Data directories to create when module is enabled.
@@ -139,7 +139,9 @@ class modXPOConnector extends DolibarrModules
 		// 'stock'            to add a tab in stock view
 		// 'thirdparty'       to add a tab in third party view
 		// 'user'             to add a tab in user view
-        $this->tabs = array('product:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_PRODUCT:/xpoconnector/product_xpofiles.php?id=__ID__');
+        $this->tabs = array('product:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_PRODUCT:/xpoconnector/product_xpofiles.php?id=__ID__',
+							'supplier_order:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER:/xpoconnector/supplierorder_xpofiles.php?id=__ID__'
+							);
 
         // Dictionaries
 	    if (! isset($conf->xpoconnector->enabled))

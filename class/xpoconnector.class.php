@@ -35,6 +35,7 @@ class XPOConnector extends SeedObject
 	public $upload_dir;
 	public $upload_path;
 	public $filename;
+	public $pref_filename;
 
     public function __construct()
     {
@@ -68,7 +69,7 @@ class XPOConnector extends SeedObject
 				return -1;
 			}
 		}
-		$this->filename = $object->ref.'-'.time().'.csv';
+		$this->filename = $this->pref_filename.'_'.$object->ref.'_'.time().'.csv';
 		$this->upload_path = $this->upload_dir.'/'.$this->filename;
 
 		//On génère le fichier CSV
@@ -119,6 +120,7 @@ class XPOConnectorProduct extends XPOConnector
 {
 	public function __construct($ref)
 	{
+		$this->pref_filename = 'M30';
 		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/product/'.$ref;
 		$this->init();
 	}
@@ -191,7 +193,55 @@ class XPOConnectorProduct extends XPOConnector
 			$xpoConnector->moveFileToFTP();
 		}
 	}
+}
 
+class XPOConnectorSupplierOrder extends XPOConnector
+{
+	public function __construct($ref)
+	{
+		$this->pref_filename = 'M40';
+		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/supplierorder/'.$ref;
+		$this->init();
+	}
+
+	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object'=>0),
+							'Reference commande'=> array('max_length' => 30, 'from_object'=>1, 'object_field'=>'ref'),
+							'Date de reception prevue' => array('max_length' => 8, 'from_object'=>1,  'object_field'=>'date_reception_prevue'),
+							'Heure de reception prevue'=> array('max_length' => 4, 'from_object'=>0), //Non géré
+							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'product_ref'),
+							'Code du lot'=> array('max_length' => 20, 'from_object'=>0), //Non géré
+							'Nombre d unites reapprovisionnees'=> array('max_length' => 9, 'from_object'=>1, 'object_field'=>'qty'),
+							'Unite de saisie des quantites commandees'=> array('max_length' => 3, 'from_object'=>0),//TODO A DISCUTER AVEC GEO
+							'Message sur bon de reception'=> array('max_length' =>60, 'from_object'=>0), //Non géré
+							'Code fournisseur'=> array('max_length' => 0, 'from_object'=>0)//Non géré
+	);
+
+	public static function send($object){
+		global $conf;
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER) ) {
+			//Préparation du CSV
+			$xpoConnector = new XPOConnectorSupplierOrder($object->ref);
+			//TODO
+			$xpoConnector->TSchema['Activite']['value'] = '';
+
+			if(!empty($object->lines)) {
+				foreach($object->lines as $line) {
+					$line->ref = $object->ref;
+					$line->fetch_optionals();
+
+					if(!empty($conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD) && !empty($line->array_options['options_'.$conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD])) {
+						$line->date_reception_prevue = date('Ymd',$line->array_options['options_'.$conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD]);
+					} else $line->date_reception_prevue = $object->date_livraison;
+					//Génération du fichier CSV
+					$res = $xpoConnector->generateCSV($line);
+					if($res < 0) return 0;
+				}
+			}
+
+			//Dépôt sur le FTP
+			$xpoConnector->moveFileToFTP();
+		}
+	}
 }
 
 //class XPOConnectorDet extends SeedObject

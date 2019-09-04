@@ -64,15 +64,25 @@ class ActionsXPOConnector
 			dol_include_once('/xpoconnector/class/xpopackagetype.class.php');
 			XPOConnectorProduct::send($object);
 		}
+		if (in_array('ordersuppliercard', explode(':', $parameters['context'])) && $action=='regenerateXPO')
+		{
+			dol_include_once('/xpoconnector/class/xpoconnector.class.php');
+			XPOConnectorSupplierOrder::send($object);
+		}
 
 		return 0;
 	}
 	public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager)
 	{
 		global $langs, $conf;
+		$langs->load('xpoconnector@xpoconnector');
 		if (in_array('productcard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT))
 		{
 			print '<a class="butAction" href="/dolibarr/acobal/dolibarr/htdocs/product/card.php?action=regenerateXPO&id='.$object->id.'">'.$langs->trans('ResendXPOFile').'</a>';
+		}
+		if (in_array('ordersuppliercard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER) && $object->statut >= CommandeFournisseur::STATUS_ORDERSENT )
+		{
+			print '<a class="butAction" href="/dolibarr/acobal/dolibarr/htdocs/fourn/commande/card.php?action=regenerateXPO&id='.$object->id.'">'.$langs->trans('ResendXPOFile').'</a>';
 		}
 
 		return 0;
