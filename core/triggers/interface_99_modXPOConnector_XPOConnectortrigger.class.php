@@ -144,6 +144,12 @@ class InterfaceXPOConnectortrigger
             );
 			XPOConnectorProduct::send($object);
         }
+      	if($action == 'SHIPPING_CLOSED') {
+			dol_syslog(
+				"Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
+			);
+			XPOConnectorShipping::send($object);
+		}
 
         return 0;
     }

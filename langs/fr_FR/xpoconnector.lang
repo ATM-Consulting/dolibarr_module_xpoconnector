@@ -64,6 +64,7 @@ XPOCONNECTOR_FTP_PASS=Mot de passe
 XPOCONNECTOR_FTP_HOST=Hôte
 XPOCONNECTOR_FTP_PORT=Port
 XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD=Extrafield ligne de commande fournisseur correspondant à "Date de réception prévue"
+XPOCONNECTOR_ORDER_DATE_EXTRAFIELD=Extrafield ligne de commande correspondant à "Date de livraison"
 MissingLocalPath=Chemin du fichier local vide pour le transfert FTP vers XPO
 FTPConnectionError=Erreur de connexion au serveur FTP XPO
 FTPLoginError=Erreur dans les logins FTP XPO
@@ -72,4 +73,4 @@ FTPFileSuccess=Fichier transmis à XPO
 ResendXPOFile=Générer et transmettre le ficher à XPO
 XPOFiles = Fichiers XPO
 
-
+XPOCONNECTOR_ENABLE_SHIPPING=Activer la gestion des expéditions

@@ -33,7 +33,7 @@ require_once '../lib/xpoconnector.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 
 // Translations
-$langs->loadLangs(array('xpoconnector@xpoconnector', 'admin', 'other'));
+$langs->loadLangs(array('xpoconnector@xpoconnector', 'admin', 'others', 'suppliers','sendings','orders'));
 
 // Access control
 if (! $user->admin) {
@@ -143,6 +143,22 @@ print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD">';
 $liste = _getExtrafields('commande_fournisseurdet');
 print $form->selectarray('XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD', $liste, $conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD,1);
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td></tr>';
+
+setup_print_title("Sending");
+setup_print_on_off('XPOCONNECTOR_ENABLE_SHIPPING');
+$var=!$var;
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("XPOCONNECTOR_ORDER_DATE_EXTRAFIELD").'</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="400">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_XPOCONNECTOR_ORDER_DATE_EXTRAFIELD">';
+$liste = _getExtrafields('commandedet');
+print $form->selectarray('XPOCONNECTOR_ORDER_DATE_EXTRAFIELD', $liste, $conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD,1);
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
 print '</form>';
 print '</td></tr>';

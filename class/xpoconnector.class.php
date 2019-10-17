@@ -60,7 +60,6 @@ class XPOConnector extends SeedObject
 			$line[] = $value;
 
 		}
-
 		//Si le dossier n'existe pas, on le crée
 		if(!dol_is_dir($this->upload_dir)) {
 			$res = dol_mkdir($this->upload_dir);
@@ -131,7 +130,7 @@ class XPOConnectorProduct extends XPOConnector
 							'Designation'=> array('max_length' => 60, 'from_object'=>1, 'object_field'=>'label'),
 							'Code EAN'=> array('max_length' => 17, 'from_object'=>0), //Non géré
 							'Par combien (PCB)'=> array('max_length' => 5, 'from_object'=>1, 'object_field'=>"array_options['options_prod_per_col']"),
-							'Unité de mesure'=> array('max_length' => 3, 'from_object'=>1, 'object_field'=>'array_options["options_"]'), //TODO A DISCUTER AVEC GEO
+							'Unité de mesure'=> array('max_length' => 3, 'from_object'=>0),
 							'Poids brut de l UVC'=> array('max_length' => 7, 'from_object'=>0), //Non géré
 							'Poids net de l UVC'=> array('max_length' => 7, 'from_object'=>1, 'object_field'=>'weight'),
 							'Hauteur de l UVC'=> array('max_length' => 3, 'from_object'=>1, 'object_field'=>'height'),
@@ -151,7 +150,8 @@ class XPOConnectorProduct extends XPOConnector
 			//Préparation du CSV
 			$xpoConnector = new XPOConnectorProduct($object->ref);
 			//TODO
-			$xpoConnector->TSchema['Activite']['value'] = '';
+			$xpoConnector->TSchema['Activite']['value'] = 'ACO';
+			$xpoConnector->TSchema['Unité de mesure']['value'] = 'UVC';
 			//Categorie
 			if(!empty($conf->global->XPOCONNECTOR_PRODUCT_CATEGORY)) {
 				$TCategId = GETPOST('categories');
@@ -211,7 +211,7 @@ class XPOConnectorSupplierOrder extends XPOConnector
 							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'product_ref'),
 							'Code du lot'=> array('max_length' => 20, 'from_object'=>0), //Non géré
 							'Nombre d unites reapprovisionnees'=> array('max_length' => 9, 'from_object'=>1, 'object_field'=>'qty'),
-							'Unite de saisie des quantites commandees'=> array('max_length' => 3, 'from_object'=>0),//TODO A DISCUTER AVEC GEO
+							'Unite de saisie des quantites commandees'=> array('max_length' => 3, 'from_object'=>0),
 							'Message sur bon de reception'=> array('max_length' =>60, 'from_object'=>0), //Non géré
 							'Code fournisseur'=> array('max_length' => 0, 'from_object'=>0)//Non géré
 	);
@@ -222,7 +222,8 @@ class XPOConnectorSupplierOrder extends XPOConnector
 			//Préparation du CSV
 			$xpoConnector = new XPOConnectorSupplierOrder($object->ref);
 			//TODO
-			$xpoConnector->TSchema['Activite']['value'] = '';
+			$xpoConnector->TSchema['Activite']['value'] = 'ACO';
+			$xpoConnector->TSchema['Unite de saisie des quantites commandees']['value'] = 'UVC';
 
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
@@ -234,6 +235,106 @@ class XPOConnectorSupplierOrder extends XPOConnector
 					} else $line->date_reception_prevue = $object->date_livraison;
 					//Génération du fichier CSV
 					$res = $xpoConnector->generateCSV($line);
+					if($res < 0) return 0;
+				}
+			}
+
+			//Dépôt sur le FTP
+			$xpoConnector->moveFileToFTP();
+		}
+	}
+}
+
+class XPOConnectorShipping extends XPOConnector
+{
+	public function __construct($ref)
+	{
+		$this->pref_filename = 'M50';
+		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/shipping/'.$ref;
+		$this->init();
+	}
+
+	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object'=>0),
+							'Reference livraison'=> array('max_length' => 30, 'from_object'=>1, 'object_field'=>'ref'),
+							'Reference commande destinataire' => array('max_length' => 30, 'from_object'=>0),
+							'Code client'=> array('max_length' => 14, 'from_object'=>0),
+							'Nom client'=> array('max_length' => 30, 'from_object'=>0),
+							'Adresse client'=> array('max_length' => 60, 'from_object'=>0),
+							'Code postal client'=> array('max_length' => 5, 'from_object'=>0),
+							'Ville client'=> array('max_length' => 26, 'from_object'=>0),
+							'Telephone client'=> array('max_length' => 20, 'from_object'=>0),
+							'Code pays client'=> array('max_length' => 3, 'from_object'=>0),
+							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'product_ref'),
+							'Nombre UVC Commandees'=> array('max_length' => 9, 'from_object'=>1, 'object_field'=>'qty'),
+							'Unite de saisie'=> array('max_length' => 3, 'from_object'=>0),
+							'Code du lot'=> array('max_length' => 20, 'from_object'=>1, 'object_field'=>'batch_number'),
+							'Date de livraison'=> array('max_length' => 8, 'from_object'=>1, 'object_field'=>'delivery_date'),
+							'Message sur bon de preparation'=> array('max_length' =>60, 'from_object'=>0), //Non géré
+							'Message sur bon de livraison'=> array('max_length' => 60, 'from_object'=>0)//Non géré
+	);
+
+	public static function send($object){
+		global $conf, $db, $langs;
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING) ) {
+			//Préparation du CSV
+			$xpoConnector = new XPOConnectorShipping($object->ref);
+
+			$xpoConnector->TSchema['Activite']['value'] = 'ACO';
+			$xpoConnector->TSchema['Unite de saisie']['value'] = 'UVC';
+
+			if($object->origin == 'commande') {
+				$commande = new Commande($db);
+				$commande->fetch($object->origin_id);
+				$xpoConnector->TSchema['Reference commande destinataire']['value'] = $commande->ref_client;
+				$TContactCommande = $commande->liste_contact(-1,'external',0,'SHIPPING');
+				if(!empty($TContactCommande)) {
+					$contact = new Contact($db);
+					$contact->fetch($TContactCommande[0]['id']);
+					if(empty($contact->thirdparty)) $contact->fetch_thirdparty();
+					$xpoConnector->TSchema['Code client']['value'] = $contact->thirdparty->code_client;
+					$xpoConnector->TSchema['Nom client']['value'] = $contact->getFullName($langs);
+					$xpoConnector->TSchema['Adresse client']['value'] = $contact->address;
+					$xpoConnector->TSchema['Code postal client']['value'] = $contact->zip;
+					$xpoConnector->TSchema['Ville client']['value'] = $contact->town;
+					$xpoConnector->TSchema['Telephone client']['value'] = $contact->phone_pro;
+					$xpoConnector->TSchema['Code pays client']['value'] = $contact->country_code;
+				}
+			}
+
+			if(empty($object->thirdparty)) $object->fetch_thirdparty();
+			if(empty($TContactCommande) && !empty($object->thirdparty)) {
+				$xpoConnector->TSchema['Code client']['value'] = $object->thirdparty->code_client;
+				$xpoConnector->TSchema['Nom client']['value'] = $object->thirdparty->nom;
+				$xpoConnector->TSchema['Adresse client']['value'] = $object->thirdparty->address;
+				$xpoConnector->TSchema['Code postal client']['value'] = $object->thirdparty->zip;
+				$xpoConnector->TSchema['Ville client']['value'] = $object->thirdparty->town;
+				$xpoConnector->TSchema['Telephone client']['value'] = $object->thirdparty->phone;
+				$xpoConnector->TSchema['Code pays client']['value'] = $object->thirdparty->country_code;
+			}
+
+
+			if(!empty($object->lines)) {
+				foreach($object->lines as $line) {
+					$line->ref = $object->ref;
+					$line->fetch_optionals();
+
+					if(!empty($conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD) && $line->fk_origin && !empty($line->fk_origin_line)) {
+						$orderline = new OrderLine($db);
+						$orderline->fetch($line->fk_origin_line);
+						$orderline->fetch_optionals();
+						if(!empty($orderline->array_options['options_'.$conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD])) {
+							$line->delivery_date = date('Ymd',$orderline->array_options['options_'.$conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD]);
+						}
+					}
+					if(empty($line->delivery_date)) $line->delivery_date = date('Ymd',$object->date_delivery);
+					//Génération du fichier CSV
+					if(!empty($line->detail_batch)) {
+						foreach($line->detail_batch as $detail_batch) {
+							$line->batch_number = $detail_batch->batch;
+							$line->qty = $detail_batch->dluo_qty;
+							$res = $xpoConnector->generateCSV($line);
+						}
+					} else $res = $xpoConnector->generateCSV($line);
 					if($res < 0) return 0;
 				}
 			}
