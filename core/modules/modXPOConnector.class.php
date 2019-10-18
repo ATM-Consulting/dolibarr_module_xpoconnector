@@ -24,7 +24,7 @@
  *  \brief      Description and activation file for module XPOConnector
  */
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
-
+include_once DOL_DOCUMENT_ROOT .'/cron/class/cronjob.class.php';
 
 /**
  *  Description and activation class for module XPOConnector
@@ -362,7 +362,12 @@ class modXPOConnector extends DolibarrModules
 		$ret = $extrafields->addExtraField('xpo_um_code', 'Code emballage UM', 'sellist', 1, '', 'product', 0, 0, '', array('options' => array('c_xpo_palet_type:code:rowid::active=1' => null)), 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
 		$ret = $extrafields->addExtraField('prod_per_col', 'Nb produits par colis (UC)', 'double', 1, '', 'product', 0, 0, '', '', 0, '', 1, 0, '', '', 'xpoconnector@xpoconnector');
 
-		//TODO Rediscuter avec Geo
+		/*
+		 * Cron
+		 */
+		$this->_addCronTaskSupplierOrderXPO();
+		$this->_addCronTaskOrderXPO();
+
 		return $this->_init($sql, $options);
 	}
 
@@ -380,5 +385,98 @@ class modXPOConnector extends DolibarrModules
 
 		return $this->_remove($sql, $options);
     }
+
+	public function _addCronTaskSupplierOrderXPO()
+	{
+		global $user, $langs;
+
+		$cronJob = new Cronjob($this->db);
+
+		$status=3; // 3 is not a status so we select all
+		$filter = array(
+			'jobtype'     => 'method',
+			'classesname' => 'xpoconnector/class/xpoconnector.class.php',
+			'objectname'  => 'XPOConnector',
+			'module_name' => 'xpoconnector',
+			'methodename' => 'runGetSupplierOrderXPO',
+		);
+		$cronJob->fetch_all('DESC', 't.rowid',0, 0, $status, $filter);
+
+		if(empty($cronJob->lines))
+		{
+			$cronJob = new Cronjob($this->db);
+
+			$cronJob->jobtype       = 'method';
+			$cronJob->label         = 'Confirmation Commandes fournisseur XPO';
+			$cronJob->classesname   = 'xpoconnector/class/xpoconnector.class.php';
+			$cronJob->objectname    = 'XPOConnector';
+			$cronJob->module_name   = 'xpoconnector';
+			$cronJob->methodename   = 'runGetSupplierOrderXPO';
+			$cronJob->priority = 0;
+			$date = new DateTime();
+			$cronJob->datestart = $date->format('Y-m-d H:i');
+
+			$cronJob->unitfrequency = 86400; // days
+			$cronJob->frequency = 1; // each days
+			$cronJob->status = 0; // desable by default
+			$cronJob->note_public = ''; // desable by default
+			$cronJob->note = ''; // desable by default
+			if($cronJob->create($user) > 0)
+			{
+				setEventMessages( $langs->trans('CronTaskAdded'), null, 'mesgs');
+			}
+			else
+			{
+				setEventMessages( $langs->trans('CronTaskAddError'), $cronJob->errors, 'errors');
+			}
+		}
+	}
+
+	public function _addCronTaskOrderXPO()
+	{
+		global $user, $langs;
+
+		$cronJob = new Cronjob($this->db);
+
+		$status=3; // 3 is not a status so we select all
+		$filter = array(
+			'jobtype'     => 'method',
+			'classesname' => 'xpoconnector/class/xpoconnector.class.php',
+			'objectname'  => 'XPOConnector',
+			'module_name' => 'xpoconnector',
+			'methodename' => 'runGetOrderXPO',
+		);
+		$cronJob->fetch_all('DESC', 't.rowid',0, 0, $status, $filter);
+
+		if(empty($cronJob->lines))
+		{
+			$cronJob = new Cronjob($this->db);
+
+			$cronJob->jobtype       = 'method';
+			$cronJob->label         = 'Confirmation Commandes clients XPO';
+			$cronJob->classesname   = 'xpoconnector/class/xpoconnector.class.php';
+			$cronJob->objectname    = 'XPOConnector';
+			$cronJob->module_name   = 'xpoconnector';
+			$cronJob->methodename   = 'runGetOrderXPO';
+			$cronJob->priority = 0;
+			$date = new DateTime();
+			$cronJob->datestart = $date->format('Y-m-d H:i');
+
+			$cronJob->unitfrequency = 86400; // days
+			$cronJob->frequency = 1; // each days
+			$cronJob->status = 0; // desable by default
+			$cronJob->note_public = ''; // desable by default
+			$cronJob->note = ''; // desable by default
+			if($cronJob->create($user) > 0)
+			{
+				setEventMessages( $langs->trans('CronTaskAdded'), null, 'mesgs');
+			}
+			else
+			{
+				setEventMessages( $langs->trans('CronTaskAddError'), $cronJob->errors, 'errors');
+			}
+		}
+	}
+
 
 }
