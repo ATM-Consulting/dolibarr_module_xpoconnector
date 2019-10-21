@@ -137,7 +137,7 @@ class XPOConnector extends SeedObject
 	 * Méthode CRON
 	 */
 	public function runGetSupplierOrderXPO() {
-		global $langs;
+		global $langs, $db, $user;
 		if($co = $this->connectFTP()) {
 			if(!dol_is_dir($this->supplierOrderDir)) {
 				$res = dol_mkdir($this->supplierOrderDir);
@@ -151,7 +151,22 @@ class XPOConnector extends SeedObject
 				foreach($TFiles as $file) {
 					$TPath = explode('/',$file);
 					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
+						$handle = fopen($this->supplierOrderDir.end($TPath), "r");
+						while(($data = fgetcsv($handle,0,';')) !== false) {
+							//Activité  = à revoir avec XPO ??
+							//Référence commande = numéro de commande fournisseur d’origine (ref commande fourn dans Dolibarr)
+							//Code interne du produit = référence du produit
+							//Nombre d'unités = quantité réceptionnée
+							//Nombre total d'U.V.C. réceptionnées = quantité total initialement commandée au fournisseur
+							//Unité de saisie
+							//Date de réception = date de réception
+							//code fournisseur = laisse vide
+							//numéro de lot
+							$cmd = new CommandeFournisseur($db);
+							$cmd->dispatchProduct($user, GETPOST($prod, 'int'), GETPOST($qty), GETPOST($ent, 'int'), GETPOST($pu), GETPOST('comment'), $dDLC, $dDLUO, GETPOST($lot, 'alpha'), GETPOST($fk_commandefourndet, 'int'), $notrigger);
 
+
+						}
 					}
 					else {
 						$this->output = $langs->trans('FTPGetError', $file);
