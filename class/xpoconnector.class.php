@@ -22,6 +22,7 @@ if (!class_exists('SeedObject'))
 	 */
 	define('INC_FROM_DOLIBARR', true);
 	require_once dirname(__FILE__).'/../config.php';
+	dol_include_once('/core/lib/files.lib.php');
 }
 
 
@@ -36,9 +37,15 @@ class XPOConnector extends SeedObject
 	public $upload_path;
 	public $filename;
 	public $pref_filename;
+	public $supplierOrderDir;
+	public $orderDir;
+	public $downloadDir;
 
     public function __construct()
     {
+    	$this->supplierOrderDir = DOL_DATA_ROOT.'/xpoconnector/received/supplierorder/';
+    	$this->orderDir = DOL_DATA_ROOT.'/xpoconnector/received/order/';
+    	$this->downloadDir = 'xpoconnector/'; //TODO
 		$this->init();
     }
 
@@ -46,7 +53,6 @@ class XPOConnector extends SeedObject
     	global $langs;
     	$error = 0;
 
-    	dol_include_once('/core/lib/files.lib.php');
     	$line = array();
     	//On formate le schema en une ligne
 		foreach($this->TSchema as $key => $schema) {
@@ -133,7 +139,29 @@ class XPOConnector extends SeedObject
 	public function runGetSupplierOrderXPO() {
 		global $langs;
 		if($co = $this->connectFTP()) {
+			if(!dol_is_dir($this->supplierOrderDir)) {
+				$res = dol_mkdir($this->supplierOrderDir);
+				if($res < 0){
+					$this->output = $langs->trans('CantCreateDirectory');
+					return -4;
+				}
+			}
+			$TFiles = ftp_nlist($co, $this->downloadDir.'M41_*');
+			if(!empty($TFiles)) {
+				foreach($TFiles as $file) {
+					$TPath = explode('/',$file);
+					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
 
+					}
+					else {
+						$this->output = $langs->trans('FTPGetError', $file);
+						return -3;
+					}
+				}
+			} else {
+				$this->output = $langs->trans('FTPNoFile');
+				return -2;
+			}
 		} else {
 			$this->output = $langs->trans('FTPConnectionError');
 			return -1;

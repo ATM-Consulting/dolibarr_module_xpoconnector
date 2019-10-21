@@ -72,5 +72,7 @@ FTPUploadError=Erreur durant l'upload du fichier (FTP XPO)
 FTPFileSuccess=Fichier transmis à XPO
 ResendXPOFile=Générer et transmettre le ficher à XPO
 XPOFiles = Fichiers XPO
-
+FTPNoFile=Pas de fichiers
+FTPGetError=Erreur lors de la récupération du fichier %s
+CantCreateDirectory=Impossible de créer le dossier
 XPOCONNECTOR_ENABLE_SHIPPING=Activer la gestion des expéditions
