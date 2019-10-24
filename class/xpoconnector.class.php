@@ -224,16 +224,29 @@ class XPOConnectorProduct extends XPOConnector
 			$xpoConnector->TSchema['Unité de mesure']['value'] = 'UVC';
 			//Categorie
 			if(!empty($conf->global->XPOCONNECTOR_PRODUCT_CATEGORY)) {
+				$categ = new Categorie($object->db);
 				$TCategId = GETPOST('categories');
+				$action = GETPOST('action');
+
+
+				if($action == 'regenerateXPO') {
+					$TCateg = $categ->getListForItem($object->id, $type = 'product');
+					$TCategId = array();
+					foreach($TCateg as $category) {
+						$TCategId[] = $category['id'];
+					}
+				}
+
 				if(!empty($TCategId)) {
 					foreach($TCategId as $fk_category) {
-						$categ = new Categorie($object->db);
+
 						$categ->fetch($fk_category);
 						$TMotherCategWays = $categ->get_all_ways();
 						if(!empty($TMotherCategWays)) {
 							foreach($TMotherCategWays as $TMotherCateg) {
 								foreach($TMotherCateg as $motherCateg) {
 									if($motherCateg->id == $conf->global->XPOCONNECTOR_PRODUCT_CATEGORY) { //On parcourt toutes les catégories, si une des catégories parentes est celle de la conf, on utilise cette categ
+
 										$xpoConnector->TSchema['Famille du produit']['value'] = $categ->label;
 										break;
 									}
