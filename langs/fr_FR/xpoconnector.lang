@@ -76,3 +76,9 @@ FTPNoFile=Pas de fichiers
 FTPGetError=Erreur lors de la récupération du fichier %s
 CantCreateDirectory=Impossible de créer le dossier
 XPOCONNECTOR_ENABLE_SHIPPING=Activer la gestion des expéditions
+XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH=Chemin où déposer le fichier produit
+XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH=Chemin où déposer le fichier commande fournisseur
+XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH==Chemin où déposer le fichier expédition
+XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH=Chemin où récupérer le fichier de réception de commande fournisseur
+XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH=Chemin où récupérer le fichier de confirmation d'expédition
+XPOCONNECTOR_ENABLE_FTP = Activer le dépot automatique des fichiers sur le FTP

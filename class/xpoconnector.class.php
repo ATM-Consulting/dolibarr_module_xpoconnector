@@ -39,13 +39,11 @@ class XPOConnector extends SeedObject
 	public $pref_filename;
 	public $supplierOrderDir;
 	public $orderDir;
-	public $downloadDir;
 
     public function __construct()
     {
     	$this->supplierOrderDir = DOL_DATA_ROOT.'/xpoconnector/received/supplierorder/';
     	$this->orderDir = DOL_DATA_ROOT.'/xpoconnector/received/order/';
-    	$this->downloadDir = 'xpoconnector/'; //TODO
 		$this->init();
     }
 
@@ -88,19 +86,20 @@ class XPOConnector extends SeedObject
 		return 1;
 	}
 
-	public function moveFileToFTP() {
+	public function moveFileToFTP($target_folder) {
 		global $conf, $langs;
-		if(!empty($this->upload_path)) {
-			$target_folder = $this->filename;//to define
-			if($co = $this->connectFTP()) {
-				if(ftp_put($co, $target_folder, $this->upload_path, FTP_BINARY)) setEventMessage($langs->trans('FTPFileSuccess'));
-				else setEventMessage($langs->trans('FTPUploadError'), 'errors');
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_FTP)) {
+			if(!empty($this->upload_path)) {
+				if($co = $this->connectFTP()) {
+					if(ftp_put($co, $target_folder, $this->upload_path, FTP_BINARY)) setEventMessage($langs->trans('FTPFileSuccess'));
+					else setEventMessage($langs->trans('FTPUploadError'), 'errors');
 
-				ftp_close($co);
+					ftp_close($co);
+				}
 			}
-		}
-		else {
-			setEventMessage($langs->trans('MissingLocalPath'), 'errors');
+			else {
+				setEventMessage($langs->trans('MissingLocalPath'), 'errors');
+			}
 		}
 	}
 
@@ -137,7 +136,7 @@ class XPOConnector extends SeedObject
 	 * Méthode CRON
 	 */
 	public function runGetSupplierOrderXPO() {
-		global $langs, $db, $user;
+		global $langs, $db, $user, $conf;
 		if($co = $this->connectFTP()) {
 			if(!dol_is_dir($this->supplierOrderDir)) {
 				$res = dol_mkdir($this->supplierOrderDir);
@@ -146,7 +145,8 @@ class XPOConnector extends SeedObject
 					return -4;
 				}
 			}
-			$TFiles = ftp_nlist($co, $this->downloadDir.'M41_*');
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH, '/').'/':'';
+			$TFiles = ftp_nlist($co, $downloadDir.'M41_*');
 			if(!empty($TFiles)) {
 				foreach($TFiles as $file) {
 					$TPath = explode('/',$file);
@@ -273,7 +273,8 @@ class XPOConnectorProduct extends XPOConnector
 			if($res < 0) return 0;
 
 			//Dépôt sur le FTP
-			$xpoConnector->moveFileToFTP();
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH, '/').'/':'';
+			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
 		}
 	}
 }
@@ -323,7 +324,8 @@ class XPOConnectorSupplierOrder extends XPOConnector
 			}
 
 			//Dépôt sur le FTP
-			$xpoConnector->moveFileToFTP();
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH, '/').'/':'';
+			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
 		}
 	}
 }
@@ -423,7 +425,8 @@ class XPOConnectorShipping extends XPOConnector
 			}
 
 			//Dépôt sur le FTP
-			$xpoConnector->moveFileToFTP();
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH, '/').'/':'';
+			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
 		}
 	}
 }

@@ -55,6 +55,11 @@ if (preg_match('/set_(.*)/', $action, $reg))
 		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_PORT", GETPOST("XPOCONNECTOR_FTP_PORT"), 'chaine', 0, '', $conf->entity);
 		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_USER", GETPOST("XPOCONNECTOR_FTP_USER"), 'chaine', 0, '', $conf->entity);
 		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_PASS", GETPOST("XPOCONNECTOR_FTP_PASS"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH", GETPOST("XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH", GETPOST("XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH", GETPOST("XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH", GETPOST("XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH"), 'chaine', 0, '', $conf->entity);
+		$res = dolibarr_set_const($db, "XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH", GETPOST("XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH"), 'chaine', 0, '', $conf->entity);
 
 		header("Location: ".$_SERVER["PHP_SELF"]);
 		exit;
@@ -69,7 +74,7 @@ if (preg_match('/set_(.*)/', $action, $reg))
 		dol_print_error($db);
 	}
 }
-	
+
 if (preg_match('/del_(.*)/', $action, $reg))
 {
 	$code=$reg[1];
@@ -164,9 +169,10 @@ print '</form>';
 print '</td></tr>';
 
 setup_print_title("FTP");
+setup_print_on_off('XPOCONNECTOR_ENABLE_FTP');
 print '<tr id ="FtpXPOConf" ' . $bc[$var] . '><td>' . $langs->trans("XPOCONNECTOR_FTP_CONF") . '</td>';
 print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="400">';
+print '<td align="right" width="800">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_XPOCONNECTOR_FTP_CONF">';
@@ -174,6 +180,12 @@ print $langs->trans("XPOCONNECTOR_FTP_HOST").' : <input type="text" size="30" na
 print $langs->trans("XPOCONNECTOR_FTP_PORT").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_PORT" value="'.$conf->global->XPOCONNECTOR_FTP_PORT.'"><BR>';
 print $langs->trans("XPOCONNECTOR_FTP_USER").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_USER" value="'.$conf->global->XPOCONNECTOR_FTP_USER.'"><BR>';
 print $langs->trans("XPOCONNECTOR_FTP_PASS").' : <input type="password" size="30" name="XPOCONNECTOR_FTP_PASS" value="'.$conf->global->XPOCONNECTOR_FTP_PASS.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH.'"><BR>';
+print $langs->trans("XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH.'"><BR>';
+
 print '<BR><input type="submit" class="butAction" value="'.$langs->trans("Modify").'">';
 print '</form>';
 print '</td>';
