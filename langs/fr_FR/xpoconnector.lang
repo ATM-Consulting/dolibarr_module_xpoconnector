@@ -82,3 +82,8 @@ XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH==Chemin où déposer le fichier expéditi
 XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH=Chemin où récupérer le fichier de réception de commande fournisseur
 XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH=Chemin où récupérer le fichier de confirmation d'expédition
 XPOCONNECTOR_ENABLE_FTP = Activer le dépot automatique des fichiers sur le FTP
+ImportFromXPOFile = Import depuis fichier XPO %s
+CantDispatch=Impossible de réceptionner %s
+FTPSucces=Succès de l'intégration des réceptions %s
+XPOCONNECTOR_XPO_WAREHOUSE=Entrepot de destination pour les réceptions provenant de XPO
+

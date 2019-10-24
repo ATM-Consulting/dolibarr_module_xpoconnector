@@ -31,6 +31,7 @@ if (! $res) {
 require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 require_once '../lib/xpoconnector.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
+dol_include_once('product/class/html.formproduct.class.php');
 
 // Translations
 $langs->loadLangs(array('xpoconnector@xpoconnector', 'admin', 'others', 'suppliers','sendings','orders'));
@@ -112,6 +113,7 @@ dol_fiche_head(
 
 // Setup page goes here
 $form=new Form($db);
+$formproduct=new FormProduct($db);
 $var=false;
 print '<table class="noborder" width="100%">';
 
@@ -185,11 +187,24 @@ print $langs->trans("XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH").' : <input ty
 print $langs->trans("XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH.'"><BR>';
 print $langs->trans("XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH.'"><BR>';
 print $langs->trans("XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH").' : <input type="text" size="30" name="XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH" value="'.$conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH.'"><BR>';
-
 print '<BR><input type="submit" class="butAction" value="'.$langs->trans("Modify").'">';
 print '</form>';
 print '</td>';
 print '</tr>';
+
+$var=!$var;
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("XPOCONNECTOR_XPO_WAREHOUSE").'</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="400">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_XPOCONNECTOR_XPO_WAREHOUSE">';
+
+print $formproduct->selectWarehouses($conf->global->XPOCONNECTOR_XPO_WAREHOUSE, 'XPOCONNECTOR_XPO_WAREHOUSE','', 1);
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td></tr>';
 
 print '</table>';
 

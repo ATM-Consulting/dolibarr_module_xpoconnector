@@ -137,6 +137,11 @@ class XPOConnector extends SeedObject
 	 */
 	public function runGetSupplierOrderXPO() {
 		global $langs, $db, $user, $conf;
+
+		dol_include_once('/fourn/class/fournisseur.commande.class.php');
+		dol_include_once('/product/class/product.class.php');
+		$langs->load('xpoconnector@xpoconnector');
+
 		if($co = $this->connectFTP()) {
 			if(!dol_is_dir($this->supplierOrderDir)) {
 				$res = dol_mkdir($this->supplierOrderDir);
@@ -151,6 +156,7 @@ class XPOConnector extends SeedObject
 				foreach($TFiles as $file) {
 					$TPath = explode('/',$file);
 					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
+						$db->begin();
 						$handle = fopen($this->supplierOrderDir.end($TPath), "r");
 						while(($data = fgetcsv($handle,0,';')) !== false) {
 							//Activité  = à revoir avec XPO ??
@@ -162,10 +168,51 @@ class XPOConnector extends SeedObject
 							//Date de réception = date de réception
 							//code fournisseur = laisse vide
 							//numéro de lot
+							//DLUO
+							//DLC
 							$cmd = new CommandeFournisseur($db);
-							$cmd->dispatchProduct($user, GETPOST($prod, 'int'), GETPOST($qty), GETPOST($ent, 'int'), GETPOST($pu), GETPOST('comment'), $dDLC, $dDLUO, GETPOST($lot, 'alpha'), GETPOST($fk_commandefourndet, 'int'), $notrigger);
+							$cmd->fetch(0,$data[1]);
+							$prod = new Product($db);
+							$prod->fetch(0,$data[2]);
+							$lineToKeep = new CommandeFournisseurLigne($db);
+							foreach($cmd->lines as $line) {
+								if($line->fk_product == $prod->id && $line->qty ==  $data[4]) {
+									$lineToKeep = $line;
+									break;
+								}
+							}
+							if(!empty($data[9])) {
+								$date = DateTime::createFromFormat('Ymd', $data[9]);
+								$data[9] = $date->format('U');
+							}
+							if(!empty($data[10])) {
+								$date = DateTime::createFromFormat('Ymd', $data[10]);
+								$data[10] = $date->format('U');
+							}
+							$res = $cmd->dispatchProduct($user,$prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile',end($TPath)), $data[9], $data[10], $data[8], $lineToKeep->id, 0);
+							if($res < 0) {
+								$db->rollback();
+								$this->output = $langs->trans('CantDispatch', $data[1].' - '.$data[2]);
+								return -5;
+							} else {
+								$xpo = new XPOConnectorSupplierOrder($cmd->ref);
+								if(!dol_is_dir($xpo->upload_dir)) {
+									$res = dol_mkdir($xpo->upload_dir);
+									if($res < 0){
+										setEventMessage($langs->trans('CantCreateDirectory'),'errors');
+										$db->rollback();
+										return -6;
+									}
+								}
+								dol_copy($this->supplierOrderDir.end($TPath), $xpo->upload_dir.'/'.end($TPath));
+							}
 
-
+						}
+						if($res > 0) {
+							$db->commit();
+							$this->output = $langs->trans('FTPSucces', $file);
+							ftp_delete($co, $file);
+							return 0;
 						}
 					}
 					else {
