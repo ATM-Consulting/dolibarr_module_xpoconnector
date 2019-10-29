@@ -123,9 +123,58 @@ class XPOConnector extends SeedObject
 	 * Méthode CRON
 	 */
 	public function runGetOrderXPO() {
-    	global $langs;
-		if($co = $this->connectFTP()) {
+    	global $langs, $conf, $db;
+		dol_include_once('/expedition/class/expedition.class.php');
 
+		if($co = $this->connectFTP()) {
+			if(!dol_is_dir($this->orderDir)) {
+				$res = dol_mkdir($this->orderDir);
+				if($res < 0){
+					$this->output = $langs->trans('CantCreateDirectory');
+					return -4;
+				}
+			}
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH, '/').'/':'';
+			$TFiles = ftp_nlist($co, $downloadDir.'M51_*');
+			if(!empty($TFiles)) {
+				foreach($TFiles as $file) {
+					$TPath = explode('/',$file);
+					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
+						$handle = fopen($this->supplierOrderDir.end($TPath), "r");
+						while(($data = fgetcsv($handle,0,';')) !== false) {
+							$exp = new Expedition($db);
+							$exp->fetch(0,$data[3]);
+							if($exp->id > 0) {
+								$xpo = new XPOConnectorShipping($exp->ref);
+								if(!dol_is_dir($xpo->upload_dir)) {
+									$res = dol_mkdir($xpo->upload_dir);
+									if($res < 0){
+										setEventMessage($langs->trans('CantCreateDirectory'),'errors');
+										return -6;
+									}
+								}
+								dol_copy($this->supplierOrderDir.end($TPath), $xpo->upload_dir.'/'.end($TPath));
+
+							} else {
+								$this->output = $langs->trans('CantFetch', $data[1].' - '.$data[2]);
+								return -5;
+							}
+						}
+						if($res > 0) {
+							$this->output = $langs->trans('FTPSucces', $file);
+							ftp_delete($co, $file);
+							return 0;
+						}
+					}
+					else {
+						$this->output = $langs->trans('FTPGetError', $file);
+						return -3;
+					}
+				}
+			} else {
+				$this->output = $langs->trans('FTPNoFile');
+				return -2;
+			}
 		} else {
 			$this->output = $langs->trans('FTPConnectionError');
 			return -1;
