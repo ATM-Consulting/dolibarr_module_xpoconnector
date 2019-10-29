@@ -238,12 +238,21 @@ class XPOConnector extends SeedObject
 								$date = DateTime::createFromFormat('Ymd', $data[10]);
 								$data[10] = $date->format('U');
 							}
-							$res = $cmd->dispatchProduct($user,$prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile',end($TPath)), $data[9], $data[10], $data[8], $lineToKeep->id, 0);
+							$res = $cmd->dispatchProduct($user,$prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile',end($TPath)), $data[9], $data[10], $data[8], !empty($lineToKeep->id)?$lineToKeep->id:0, 0);
 							if($res < 0) {
 								$db->rollback();
 								$this->output = $langs->trans('CantDispatch', $data[1].' - '.$data[2]);
 								return -5;
 							} else {
+								if(!empty($data[6])) {
+									$date = DateTime::createFromFormat('Ymd', $data[6]);
+									$data[6] = $date->format('U');
+									$sql = "UPDATE ".MAIN_DB_PREFIX."commande_fournisseur_dispatch SET datec='".$cmd->db->idate($data[6])."' ORDER BY `rowid` DESC LIMIT 1";
+									$cmd->db->query($sql);
+									$sql = "UPDATE ".MAIN_DB_PREFIX."stock_mouvement SET datem='".$cmd->db->idate($data[6])."' ORDER BY `rowid` DESC LIMIT 1";
+									$cmd->db->query($sql);
+								}
+
 								$xpo = new XPOConnectorSupplierOrder($cmd->ref);
 								if(!dol_is_dir($xpo->upload_dir)) {
 									$res = dol_mkdir($xpo->upload_dir);
