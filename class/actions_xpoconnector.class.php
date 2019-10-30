@@ -27,10 +27,10 @@
  */
 class ActionsXPOConnector
 {
-    /**
-     * @var DoliDb		Database handler (result of a new DoliDB)
-     */
-    public $db;
+	/**
+	 * @var DoliDb        Database handler (result of a new DoliDB)
+	 */
+	public $db;
 
 	/**
 	 * @var array Hook results. Propagated to $hookmanager->resArray for later reuse
@@ -49,45 +49,76 @@ class ActionsXPOConnector
 
 	/**
 	 * Constructor
-     * @param DoliDB    $db    Database connector
+	 * @param DoliDB $db Database connector
 	 */
-	public function __construct($db)
-	{
+	public function __construct($db) {
 		$this->db = $db;
 	}
 
-	public function doActions($parameters, &$object, &$action, $hookmanager)
-	{
-		if (in_array('productcard', explode(':', $parameters['context'])) && $action=='regenerateXPO')
-		{
+	public function doActions($parameters, &$object, &$action, $hookmanager) {
+		global $conf;
+		$TContext = explode(':', $parameters['context']);
+		if(in_array('productcard', $TContext) && $action == 'regenerateXPO') {
 			dol_include_once('/xpoconnector/class/xpoconnector.class.php');
 			dol_include_once('/xpoconnector/class/xpopackagetype.class.php');
 			XPOConnectorProduct::send($object);
 		}
-		if (in_array('ordersuppliercard', explode(':', $parameters['context'])) && $action=='regenerateXPO')
-		{
+		if(in_array('ordersuppliercard', $TContext) && $action == 'regenerateXPO') {
 			dol_include_once('/xpoconnector/class/xpoconnector.class.php');
 			XPOConnectorSupplierOrder::send($object);
 		}
-		if (in_array('expeditioncard', explode(':', $parameters['context'])) && $action=='regenerateXPO')
-		{
+		if(in_array('expeditioncard', $TContext) && $action == 'regenerateXPO') {
 			dol_include_once('/xpoconnector/class/xpoconnector.class.php');
 			XPOConnectorShipping::send($object);
 		}
 
-		return 0;
-	}
-	public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager)
-	{
-		global $langs, $conf;
-		$langs->load('xpoconnector@xpoconnector');
-		if (in_array('productcard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT)
-		|| in_array('ordersuppliercard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER) && $object->statut >= CommandeFournisseur::STATUS_ORDERSENT
-		|| in_array('expeditioncard', explode(':', $parameters['context'])) && !empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING) && $object->statut >= Expedition::STATUS_VALIDATED)
-		{
-			print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&amp;action=regenerateXPO">'.$langs->trans('ResendXPOFile').'</a>';
+		/*
+		 * StackBuilder
+		 */
+		if((in_array('propalcard', $TContext) && $object->statut >= Propal::STATUS_VALIDATED)
+			|| (in_array('ordercard', $TContext) && $object->statut >= Commande::STATUS_VALIDATED)
+			|| (in_array('expeditioncard', $TContext) && $object->statut >= Expedition::STATUS_VALIDATED)) {
+			dol_include_once('/xpoconnector/class/stackbuilderconnector.class.php');
+			dol_include_once('/xpoconnector/class/xpopackagetype.class.php');
+
+			if(!empty($conf->global->XPOCONNECTOR_ENABLE_STACKBUILDER) && $action == "stackbuilderdownload") {
+				$filepath = StackBuilderConnector::generateXML($object);
+				if(!empty($filepath)) {
+					header('Content-Description: File Transfer');
+					header('Content-Type: application/octet-stream');
+					header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+					header('Expires: 0');
+					header('Cache-Control: must-revalidate');
+					header('Pragma: public');
+					header('Content-Length: ' . filesize($filepath));
+					readfile($filepath);
+					exit;
+				}
+			}
 		}
 
+		return 0;
+	}
+
+	public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager) {
+		global $langs, $conf;
+		$langs->load('xpoconnector@xpoconnector');
+		$TContext = explode(':', $parameters['context']);
+
+		if(in_array('productcard', $TContext) && !empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT)
+			|| in_array('ordersuppliercard', $TContext) && !empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER) && $object->statut >= CommandeFournisseur::STATUS_ORDERSENT
+			|| in_array('expeditioncard', $TContext) && !empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING) && $object->statut >= Expedition::STATUS_VALIDATED) {
+			print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&amp;action=regenerateXPO">' . $langs->trans('ResendXPOFile') . '</a>';
+		}
+
+		/*
+		 * StackBuilder
+		 */
+		if((in_array('propalcard', $TContext) && $object->statut >= Propal::STATUS_VALIDATED)
+			|| (in_array('ordercard', $TContext) && $object->statut >= Commande::STATUS_VALIDATED)
+			|| (in_array('expeditioncard', $TContext) && $object->statut >= Expedition::STATUS_VALIDATED)) {
+			if(!empty($conf->global->XPOCONNECTOR_ENABLE_STACKBUILDER)) print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&amp;action=stackbuilderdownload">' . $langs->trans('DowloadStackBuilderFile') . '</a>';
+		}
 
 		return 0;
 	}

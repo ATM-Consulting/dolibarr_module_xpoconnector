@@ -206,6 +206,9 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print '</form>';
 print '</td></tr>';
 
+setup_print_title("StackBuilder");
+setup_print_on_off('XPOCONNECTOR_ENABLE_STACKBUILDER');
+
 print '</table>';
 
 dol_fiche_end(-1);

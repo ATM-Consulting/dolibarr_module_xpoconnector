@@ -86,4 +86,8 @@ ImportFromXPOFile = Import depuis fichier XPO %s
 CantDispatch=Impossible de réceptionner %s
 FTPSucces=Succès de l'intégration des réceptions %s
 XPOCONNECTOR_XPO_WAREHOUSE=Entrepot de destination pour les réceptions provenant de XPO
-
+DowloadStackBuilderFile=Télécharger le fichier StackBuilder
+XPOCONNECTOR_ENABLE_STACKBUILDER=Activer le téléchargement des fichiers XML StackBuilder
+MissingProdPerCol = Nb produits par colis non renseigné pour le produit %s
+MissingQty = Quantité non renseignée pour la ligne %s
+MissingUcCode = Code emballage UC non renseigné pour le produit %s
