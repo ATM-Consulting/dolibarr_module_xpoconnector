@@ -55,9 +55,9 @@ class StackBuilderConnector extends SeedObject
 						$hauteur = 0;
 						$longueur = 0;
 						$largeur = 0;
-						$colis = $xml->addChild('colis');
-						$colis->addChild('numerouc',0); //TODO
-						$colis->addChild('refarticle',$line->product->ref);
+						$colis = $xml->addChild('Colis');
+						$colis->addChild('NumeroUC',0); //TODO
+						$colis->addChild('RefArticle',$line->product->ref);
 
 						if(!empty($line->product->array_options['options_xpo_uc_code'])) {
 							$packageType = new XPOPackageType($object->db);
@@ -73,10 +73,10 @@ class StackBuilderConnector extends SeedObject
 							setEventMessage($langs->trans('MissingUcCode',$line->product->ref), 'errors');
 							return false;
 						}
-						$colis->addChild('hauteurcolis',$hauteur);
-						$colis->addChild('longueurcolis',$longueur);
-						$colis->addChild('largeurcolis',$largeur);
-						$colis->addChild('poidsbrutcolis',$poidsBrut);
+						$colis->addChild('HauteurColis',$hauteur);
+						$colis->addChild('LongueurColis',$longueur);
+						$colis->addChild('LargeurColis',$largeur);
+						$colis->addChild('PoidsBrutColis',$poidsBrut);
 
 						$qtyLeft -= $line->product->array_options["options_prod_per_col"];
 					}
