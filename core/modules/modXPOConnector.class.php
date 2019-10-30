@@ -141,7 +141,8 @@ class modXPOConnector extends DolibarrModules
 		// 'user'             to add a tab in user view
         $this->tabs = array('product:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_PRODUCT:/xpoconnector/product_xpofiles.php?id=__ID__',
 							'supplier_order:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER:/xpoconnector/supplierorder_xpofiles.php?id=__ID__',
-							'delivery:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_SHIPPING:/xpoconnector/shipping_xpofiles.php?id=__ID__'
+							'delivery:+xpofiles:XPOFiles:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_SHIPPING:/xpoconnector/shipping_xpofiles.php?id=__ID__',
+							'delivery:+palletization:Palletization:xpoconnector@xpoconnector:$conf->global->XPOCONNECTOR_ENABLE_STACKBUILDER:/xpoconnector/palletization.php?id=__ID__'
 							);
 
         // Dictionaries
