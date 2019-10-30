@@ -74,20 +74,10 @@ print '<hr/>';
 
 if(file_exists($upload_dir.'/import_stackbuilder.xml')) {
 	$xml = simplexml_load_file($upload_dir.'/import_stackbuilder.xml');
-	print '<div class="tree">';
-	print'<ul>
+
+	print'<div class="tree"><ul>
 		<li>
-			<a href="#">'.$object->ref.'</a>
-			<ul>
-				<li>
-					<a href="#">Palette N</a>
-					<ul>
-						<li>
-							<a href="#">Produit N</a>
-						</li>
-					</ul>
-				</li>
-				<li>
+			
 					<a href="#">Palette 1<br/>
 L cm*l cm*h cm<br/>
 poids chargement:xxxkg <br/>
@@ -103,8 +93,27 @@ poids:xxxKg
 						<li><a href="#">Produit Y</br>4/4</a></li>
 					</ul>
 				</li>
-				<li>
-					<a href="#">Palette 2<br/>
+					</ul></div>';
+	print'<div class="tree"><ul>
+		<li>
+			
+					<a href="#">Palette 1<br/>
+L cm*l cm*h cm<br/>
+poids chargement:xxxkg <br/>
+poids:xxxKg 
+</a>
+					<ul>
+						<li><a href="#">Produit N</br>1/3</a></li>
+						<li><a href="#">Produit N</br>2/3</a></li>
+						<li><a href="#">Produit N</br>3/3</a></li>
+				
+					</ul>
+				</li>
+					</ul></div>';
+	print'<div class="tree"><ul>
+		<li>
+			
+					<a href="#">Palette 1<br/>
 L cm*l cm*h cm<br/>
 poids chargement:xxxkg <br/>
 poids:xxxKg 
@@ -115,31 +124,20 @@ poids:xxxKg
 						<li><a href="#">Produit N</br>3/3</a></li>
 						<li><a href="#">Produit Y</br>1/4</a></li>
 						<li><a href="#">Produit Y</br>2/4</a></li>
-						<li><a href="#">Produit Y</br>3/4</a></li>
-						<li><a href="#">Produit Y</br>4/4</a></li>
-					</ul>
-				</li>
-				<li>
-					<a href="#">Palette 3<br/>
-L cm*l cm*h cm<br/>
-poids chargement:xxxkg <br/>
-poids:xxxKg 
-</a>
-					<ul>
-						<li><a href="#">Produit N</br>1/3</a></li>
-						<li><a href="#">Produit N</br>2/3</a></li>
-						<li><a href="#">Produit N</br>3/3</a></li>
-						<li><a href="#">Produit Y</br>1/4</a></li>
 						<li><a href="#">Produit Y</br>2/4</a></li>
-						<li><a href="#">Produit Y</br>3/4</a></li>
-						<li><a href="#">Produit Y</br>4/4</a></li>
-					</ul>
-				</li>
-			</ul>
-		</li>
-	</ul>';
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+						<li><a href="#">Produit Y</br>2/4</a></li>
+				
 
-	print '</div>';
+					</ul>
+				</li>
+					</ul></div>';
 
 
 } else setEventMessage($langs->trans('XMLFileNotFound'),'warnings');

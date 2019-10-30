@@ -1,6 +1,6 @@
 /*Now the CSS*/
 .tree {
-	display: ruby;
+	display: inline-block;
 }
 
 .tree ul {
