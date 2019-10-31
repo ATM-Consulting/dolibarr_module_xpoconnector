@@ -120,6 +120,20 @@ class ActionsXPOConnector
 			if(!empty($conf->global->XPOCONNECTOR_ENABLE_STACKBUILDER)) print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&amp;action=stackbuilderdownload">' . $langs->trans('DowloadStackBuilderFile') . '</a>';
 		}
 
+		if(in_array('expeditioncard', $TContext) && !empty($conf->global->XPOCONNECTOR_ENABLE_STACKBUILDER)) {
+			$upload_dir = $conf->expedition->dir_output . "/sending/" . dol_sanitizeFileName($object->ref);
+			$file = $upload_dir. '/import_stackbuilder.xml';
+			if(!file_exists($file)) {
+				?>
+				<script type="text/javascript">
+					$(document).ready(function() {
+                        $('a[href*="action=classifyclosed"]').hide();
+					});
+				</script>
+				<?php
+			}
+		}
+
 		return 0;
 	}
 }
