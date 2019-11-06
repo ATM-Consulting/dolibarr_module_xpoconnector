@@ -33,21 +33,22 @@ class StackBuilderConnector extends SeedObject
 		$upload_dir = '';
 		$qtyColis = 0;
 		if($object->element == 'propal') $upload_dir = $conf->propal->multidir_output[$object->entity] . '/' . dol_sanitizeFileName($object->ref);
-		else if($object->element == 'commande') $upload_dir = $conf->commande->dir_output . "/" . dol_sanitizeFileName($object->ref);
-		else if($object->element == 'shipping') $upload_dir = $conf->expedition->dir_output . "/sending/" . dol_sanitizeFileName($object->ref);
+		elseif($object->element == 'commande') $upload_dir = $conf->commande->dir_output . "/" . dol_sanitizeFileName($object->ref);
+		elseif($object->element == 'shipping') $upload_dir = $conf->expedition->dir_output . "/sending/" . dol_sanitizeFileName($object->ref);
 		$xml = new SimpleXMLElement('<?xml version="1.0" encoding="ISO-8859-1"?><STACKBUILDER/>');
 		if(!empty($object->lines)) {
+			$compteur = 0;
 			foreach($object->lines as $line) {
 				$qtyLeft = $line->qty;
 				if(!empty($line->fk_product)) {
 					$line->fetch_product();
 					if(!empty($line->product->array_options['options_prod_per_col']) && !empty($line->qty)) $qtyColis = ceil(floatval($line->qty) / floatval($line->product->array_options['options_prod_per_col']));
-					else if(empty($line->product->array_options['options_prod_per_col'])) {
-						setEventMessage($langs->trans('MissingProdPerCol',$line->product->ref), 'errors');
+					elseif(empty($line->product->array_options['options_prod_per_col'])) {
+						setEventMessage($langs->trans('MissingProdPerCol', $line->product->ref), 'errors');
 						return false;
 					}
-					else if(empty($line->qty)) {
-						setEventMessage($langs->trans('MissingQty',$line->product->ref), 'errors');
+					elseif(empty($line->qty)) {
+						setEventMessage($langs->trans('MissingQty', $line->product->ref), 'errors');
 						return false;
 					}
 					for($i = 0; $i<$qtyColis; $i++) { //Autant de ligne que de colis
@@ -56,8 +57,8 @@ class StackBuilderConnector extends SeedObject
 						$longueur = 0;
 						$largeur = 0;
 						$colis = $xml->addChild('Colis');
-						$colis->addChild('NumeroUC',0); //TODO
-						$colis->addChild('RefArticle',$line->product->ref);
+						$colis->addChild('NumeroUC', $compteur);
+						$colis->addChild('RefArticle', $line->product->ref);
 
 						if(!empty($line->product->array_options['options_xpo_uc_code'])) {
 							$packageType = new XPOPackageType($object->db);
@@ -79,6 +80,7 @@ class StackBuilderConnector extends SeedObject
 						$colis->addChild('PoidsBrutColis',$poidsBrut);
 
 						$qtyLeft -= $line->product->array_options["options_prod_per_col"];
+						$compteur++;
 					}
 				}
 			}
