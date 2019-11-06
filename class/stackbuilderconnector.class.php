@@ -42,6 +42,7 @@ class StackBuilderConnector extends SeedObject
 				$qtyLeft = $line->qty;
 				if(!empty($line->fk_product)) {
 					$line->fetch_product();
+					if($line->product->type != Product::TYPE_PRODUCT) continue;
 					if(!empty($line->product->array_options['options_prod_per_col']) && !empty($line->qty)) $qtyColis = ceil(floatval($line->qty) / floatval($line->product->array_options['options_prod_per_col']));
 					elseif(empty($line->product->array_options['options_prod_per_col'])) {
 						setEventMessage($langs->trans('MissingProdPerCol', $line->product->ref), 'errors');
