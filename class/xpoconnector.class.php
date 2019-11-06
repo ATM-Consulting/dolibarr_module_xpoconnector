@@ -109,13 +109,15 @@ class XPOConnector extends SeedObject
 		$ftp_port = (empty($conf->global->XPOCONNECTOR_FTP_PORT)) ? 21 : $conf->global->XPOCONNECTOR_FTP_PORT;
 		$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
 		$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
-		if($co = ftp_connect($ftp_host, $ftp_port)) {
-			if(ftp_login($co, $ftp_user, $ftp_pass)) {
-				return $co;
+		if (!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) {
+			if($co = ftp_connect($ftp_host, $ftp_port)) {
+				if(ftp_login($co, $ftp_user, $ftp_pass)) {
+					return $co;
+				}
+				else setEventMessage($langs->trans('FTPLoginError'), 'errors');
 			}
-			else setEventMessage($langs->trans('FTPLoginError'), 'errors');
-		} else setEventMessage($langs->trans('FTPConnectionError'), 'errors');
-
+			else setEventMessage($langs->trans('FTPConnectionError'), 'errors');
+		}
 		return false;
 	}
 
