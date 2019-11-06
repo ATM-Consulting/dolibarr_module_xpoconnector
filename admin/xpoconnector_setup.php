@@ -200,7 +200,10 @@ print '<td align="right" width="400">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_XPOCONNECTOR_XPO_WAREHOUSE">';
-
+print $formproduct->selectWarehouses($conf->global->XPOCONNECTOR_XPO_WAREHOUSE, 'XPOCONNECTOR_XPO_WAREHOUSE','', 1);
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td></tr>';
 print "<tr>";
 print "<td>Domaine autorisé pour l'envoi ftp <br />- Si le domaine est différent de celui-ci, les fichiers ne seront pas envoyés<br />- Vous pouvez ajouter plusieurs domaines en les séparant par un point-virgule";
 if (!in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) print "<br /><strong>Le serveur actuel n'enverra pas les fichiers</strong>";
@@ -218,11 +221,6 @@ print '</form>';
 
 print "</td>";
 print "</tr>";
-
-print $formproduct->selectWarehouses($conf->global->XPOCONNECTOR_XPO_WAREHOUSE, 'XPOCONNECTOR_XPO_WAREHOUSE','', 1);
-print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
-print '</form>';
-print '</td></tr>';
 
 setup_print_title("StackBuilder");
 setup_print_on_off('XPOCONNECTOR_ENABLE_STACKBUILDER');
