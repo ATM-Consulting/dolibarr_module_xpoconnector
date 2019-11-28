@@ -91,10 +91,14 @@ class XPOConnector extends SeedObject
 		if(!empty($conf->global->XPOCONNECTOR_ENABLE_FTP)) {
 			if(!empty($this->upload_path)) {
 				if($co = $this->connectFTP()) {
-					if(ftp_put($co, $target_folder, $this->upload_path, FTP_BINARY)) setEventMessage($langs->trans('FTPFileSuccess'));
+					$sftp = ssh2_sftp($co);
+					//.tmp obligatoire pour le serveur ftp
+					if(ssh2_scp_send($co, $this->upload_path, $target_folder.'.tmp')) setEventMessage($langs->trans('FTPFileSuccess'));
 					else setEventMessage($langs->trans('FTPUploadError'), 'errors');
 
-					ftp_close($co);
+//					ssh2_disconnect($co); //==> Ne fonctionne pas comme attendu, ça n'arrive pas à disconnect
+					unset($co);
+
 				}
 			}
 			else {
@@ -110,8 +114,8 @@ class XPOConnector extends SeedObject
 		$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
 		$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
 		if (!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) {
-			if($co = ftp_connect($ftp_host, $ftp_port)) {
-				if(ftp_login($co, $ftp_user, $ftp_pass)) {
+			if($co = ssh2_connect($ftp_host, $ftp_port)) {
+				if(ssh2_auth_password($co, $ftp_user, $ftp_pass)) {
 					return $co;
 				}
 				else setEventMessage($langs->trans('FTPLoginError'), 'errors');

@@ -73,7 +73,12 @@ print '<hr/>';
 
 if(file_exists($upload_dir . '/import_stackbuilder.xml')) {
 	$xml = simplexml_load_file($upload_dir . '/import_stackbuilder.xml');
-
+//	var_dump($xml->data);exit;
+//	foreach($xml->data->items as $palletAnalysis) {
+//		var_dump($palletAnalysis);
+//	}
+//
+//	exit;
 	print'<div class="horizontal">';
 	print '		<div class="tree">
 				<div class="palette">
