@@ -136,41 +136,68 @@ class XPOConnector extends SeedObject
 				}
 			}
 			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH, '/') . '/' : '';
-			$TFiles = ftp_nlist($co, $downloadDir . 'M51_*');
+			$downloadDir = ltrim($downloadDir, '/');
+			$sftp = ssh2_sftp($co);
+			$sftp_fd = intval($sftp);
+			$TFiles = opendir("ssh2.sftp://" . $sftp_fd . "/" . $downloadDir);
 			if(!empty($TFiles)) {
-				foreach($TFiles as $file) {
-					$TPath = explode('/', $file);
-					if(ftp_get($co, $this->supplierOrderDir . end($TPath), $file, FTP_BINARY)) {
-						$handle = fopen($this->supplierOrderDir . end($TPath), "r");
-						while(($data = fgetcsv($handle, 0, ';')) !== false) {
-							$exp = new Expedition($db);
-							$exp->fetch(0, $data[3]);
-							if($exp->id > 0) {
-								$xpo = new XPOConnectorShipping($exp->ref);
-								if(!dol_is_dir($xpo->upload_dir)) {
-									$res = dol_mkdir($xpo->upload_dir);
-									if($res < 0) {
-										setEventMessage($langs->trans('CantCreateDirectory'), 'errors');
-										return -6;
-									}
+				while(($file = readdir($TFiles)) != false) {
+					if(substr($file, 0, 4) !== 'M51_') continue;
+					/*
+					 * Copie
+					 */
+					if(!$remote = @fopen("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}", 'r')) {
+						$this->output = $langs->trans('CantOpenRemoteFile');
+						return -6;
+					}
+
+					if(!$local = @fopen($this->supplierOrderDir . $file, 'w')) {
+						$this->output = $langs->trans('CantOpenLocalFile');
+						return -7;
+					}
+
+					$read = 0;
+					$filesize = filesize("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}");
+					while($read < $filesize && ($buffer = fread($remote, $filesize - $read))) {
+						$read += strlen($buffer);
+						if(fwrite($local, $buffer) === false) {
+							$this->output = $langs->trans('CantWriteInLocalFile');
+							return -8;
+						}
+					}
+					fclose($local);
+					fclose($remote);
+					/*
+					 * Fin de la copie
+					 */
+
+					$handle = fopen($this->supplierOrderDir . $file, "r");
+					while(($data = fgetcsv($handle, 0, ';')) !== false) {
+						$exp = new Expedition($db);
+						$exp->fetch(0, $data[3]);
+						if($exp->id > 0) {
+							$xpo = new XPOConnectorShipping($exp->ref);
+							if(!dol_is_dir($xpo->upload_dir)) {
+								$res = dol_mkdir($xpo->upload_dir);
+								if($res < 0) {
+									setEventMessage($langs->trans('CantCreateDirectory'), 'errors');
+									return -6;
 								}
-								dol_copy($this->supplierOrderDir . end($TPath), $xpo->upload_dir . '/' . end($TPath));
 							}
-							else {
-								$this->output = $langs->trans('CantFetch', $data[1] . ' - ' . $data[2]);
-								return -5;
-							}
+							dol_copy($this->supplierOrderDir . $file, $xpo->upload_dir . '/' . $file);
 						}
-						if($res > 0) {
-							$this->output = $langs->trans('FTPSucces', $file);
-							ftp_delete($co, $file);
-							return 0;
+						else {
+							$this->output = $langs->trans('CantFetch', $data[1] . ' - ' . $data[2]);
+							return -5;
 						}
 					}
-					else {
-						$this->output = $langs->trans('FTPGetError', $file);
-						return -3;
+					if(!unlink("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}")) {
+						$this->output = $langs->trans('CantDeleteRemoteFile');
+						return -10;
 					}
+
+					$this->output = $langs->trans('FTPSucces', $file);
+					return 0;
 				}
 			}
 			else {
@@ -291,7 +318,7 @@ class XPOConnector extends SeedObject
 							if(!dol_is_dir($xpo->upload_dir)) {
 								$res = dol_mkdir($xpo->upload_dir);
 								if($res < 0) {
-									$this->output =$langs->trans('CantCreateDirectory');
+									$this->output = $langs->trans('CantCreateDirectory');
 									$db->rollback();
 									return -6;
 								}
@@ -301,7 +328,7 @@ class XPOConnector extends SeedObject
 					}
 					if($res > 0) {
 						if(!unlink("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}")) {
-							$this->output =$langs->trans('CantDeleteRemoteFile');
+							$this->output = $langs->trans('CantDeleteRemoteFile');
 							$db->rollback();
 							return -10;
 						}
@@ -323,7 +350,6 @@ class XPOConnector extends SeedObject
 			return -1;
 		}
 	}
-
 }
 
 class XPOConnectorProduct extends XPOConnector
