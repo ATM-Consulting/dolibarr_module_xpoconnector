@@ -15,23 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-if (!class_exists('SeedObject'))
-{
+if(!class_exists('SeedObject')) {
 	/**
 	 * Needed if $form->showLinkedObjectBlock() is call or for session timeout on our module page
 	 */
 	define('INC_FROM_DOLIBARR', true);
-	require_once dirname(__FILE__).'/../config.php';
+	require_once dirname(__FILE__) . '/../config.php';
 	dol_include_once('/core/lib/files.lib.php');
 }
 
 
 class XPOConnector extends SeedObject
 {
-    /**
-     * XPOConnector constructor.
-     * @param DoliDB    $db    Database connector
-     */
+	/**
+	 * XPOConnector constructor.
+	 * @param DoliDB $db Database connector
+	 */
 	public $TSchema;
 	public $upload_dir;
 	public $upload_path;
@@ -40,45 +39,42 @@ class XPOConnector extends SeedObject
 	public $supplierOrderDir;
 	public $orderDir;
 
-    public function __construct()
-    {
-    	$this->supplierOrderDir = DOL_DATA_ROOT.'/xpoconnector/received/supplierorder/';
-    	$this->orderDir = DOL_DATA_ROOT.'/xpoconnector/received/order/';
+	public function __construct() {
+		$this->supplierOrderDir = DOL_DATA_ROOT . '/xpoconnector/received/supplierorder/';
+		$this->orderDir = DOL_DATA_ROOT . '/xpoconnector/received/order/';
 		$this->init();
-    }
+	}
 
-    public function generateCSV($object) {
-    	global $langs;
-    	$error = 0;
+	public function generateCSV($object) {
+		global $langs;
+		$error = 0;
 
-    	$line = array();
-    	//On formate le schema en une ligne
+		$line = array();
+		//On formate le schema en une ligne
 		foreach($this->TSchema as $key => $schema) {
 			if($schema['from_object']) {
-				$value = eval('return $object->'.$schema['object_field'].';');
+				$value = eval('return $object->' . $schema['object_field'] . ';');
 			}
 			else $value = $schema['value'];
 
-
-			if(!empty($schema['max_length']) && strlen($value) > $schema['max_length']) $value = substr($value,0,$schema['max_length']);
+			if(!empty($schema['max_length']) && strlen($value) > $schema['max_length']) $value = substr($value, 0, $schema['max_length']);
 			$line[] = $value;
-
 		}
 		//Si le dossier n'existe pas, on le crée
 		if(!dol_is_dir($this->upload_dir)) {
 			$res = dol_mkdir($this->upload_dir);
-			if($res < 0){
-				setEventMessage($langs->trans('CantCreateDirectory'),'errors');
+			if($res < 0) {
+				setEventMessage($langs->trans('CantCreateDirectory'), 'errors');
 				return -1;
 			}
 		}
-		$this->filename = $this->pref_filename.'_'.$object->ref.'_'.time().'.csv';
-		$this->upload_path = $this->upload_dir.'/'.$this->filename;
+		$this->filename = $this->pref_filename . '_' . $object->ref . '_' . time() . '.csv';
+		$this->upload_path = $this->upload_dir . '/' . $this->filename;
 
 		//On génère le fichier CSV
 		$f_out = fopen($this->upload_path, 'a');
 		if($f_out == false) {
-			setEventMessage($langs->trans('CantOpenCreateFile'),'errors');
+			setEventMessage($langs->trans('CantOpenCreateFile'), 'errors');
 			return -2;
 		}
 		fputcsv($f_out, $line, ";");
@@ -93,12 +89,11 @@ class XPOConnector extends SeedObject
 				if($co = $this->connectFTP()) {
 					$sftp = ssh2_sftp($co);
 					//.tmp obligatoire pour le serveur ftp
-					if(ssh2_scp_send($co, $this->upload_path, $target_folder.'.tmp')) setEventMessage($langs->trans('FTPFileSuccess'));
+					if(ssh2_scp_send($co, $this->upload_path, $target_folder . '.tmp')) setEventMessage($langs->trans('FTPFileSuccess'));
 					else setEventMessage($langs->trans('FTPUploadError'), 'errors');
 
 //					ssh2_disconnect($co); //==> Ne fonctionne pas comme attendu, ça n'arrive pas à disconnect
 					unset($co);
-
 				}
 			}
 			else {
@@ -113,7 +108,7 @@ class XPOConnector extends SeedObject
 		$ftp_port = (empty($conf->global->XPOCONNECTOR_FTP_PORT)) ? 21 : $conf->global->XPOCONNECTOR_FTP_PORT;
 		$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
 		$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
-		if (!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) {
+		if(!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) {
 			if($co = ssh2_connect($ftp_host, $ftp_port)) {
 				if(ssh2_auth_password($co, $ftp_user, $ftp_pass)) {
 					return $co;
@@ -129,40 +124,40 @@ class XPOConnector extends SeedObject
 	 * Méthode CRON
 	 */
 	public function runGetOrderXPO() {
-    	global $langs, $conf, $db;
+		global $langs, $conf, $db;
 		dol_include_once('/expedition/class/expedition.class.php');
 
 		if($co = $this->connectFTP()) {
 			if(!dol_is_dir($this->orderDir)) {
 				$res = dol_mkdir($this->orderDir);
-				if($res < 0){
+				if($res < 0) {
 					$this->output = $langs->trans('CantCreateDirectory');
 					return -4;
 				}
 			}
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH, '/').'/':'';
-			$TFiles = ftp_nlist($co, $downloadDir.'M51_*');
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_ORDER_PATH, '/') . '/' : '';
+			$TFiles = ftp_nlist($co, $downloadDir . 'M51_*');
 			if(!empty($TFiles)) {
 				foreach($TFiles as $file) {
-					$TPath = explode('/',$file);
-					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
-						$handle = fopen($this->supplierOrderDir.end($TPath), "r");
-						while(($data = fgetcsv($handle,0,';')) !== false) {
+					$TPath = explode('/', $file);
+					if(ftp_get($co, $this->supplierOrderDir . end($TPath), $file, FTP_BINARY)) {
+						$handle = fopen($this->supplierOrderDir . end($TPath), "r");
+						while(($data = fgetcsv($handle, 0, ';')) !== false) {
 							$exp = new Expedition($db);
-							$exp->fetch(0,$data[3]);
+							$exp->fetch(0, $data[3]);
 							if($exp->id > 0) {
 								$xpo = new XPOConnectorShipping($exp->ref);
 								if(!dol_is_dir($xpo->upload_dir)) {
 									$res = dol_mkdir($xpo->upload_dir);
-									if($res < 0){
-										setEventMessage($langs->trans('CantCreateDirectory'),'errors');
+									if($res < 0) {
+										setEventMessage($langs->trans('CantCreateDirectory'), 'errors');
 										return -6;
 									}
 								}
-								dol_copy($this->supplierOrderDir.end($TPath), $xpo->upload_dir.'/'.end($TPath));
-
-							} else {
-								$this->output = $langs->trans('CantFetch', $data[1].' - '.$data[2]);
+								dol_copy($this->supplierOrderDir . end($TPath), $xpo->upload_dir . '/' . end($TPath));
+							}
+							else {
+								$this->output = $langs->trans('CantFetch', $data[1] . ' - ' . $data[2]);
 								return -5;
 							}
 						}
@@ -177,11 +172,13 @@ class XPOConnector extends SeedObject
 						return -3;
 					}
 				}
-			} else {
+			}
+			else {
 				$this->output = $langs->trans('FTPNoFile');
 				return -2;
 			}
-		} else {
+		}
+		else {
 			$this->output = $langs->trans('FTPConnectionError');
 			return -1;
 		}
@@ -200,95 +197,128 @@ class XPOConnector extends SeedObject
 		if($co = $this->connectFTP()) {
 			if(!dol_is_dir($this->supplierOrderDir)) {
 				$res = dol_mkdir($this->supplierOrderDir);
-				if($res < 0){
+				if($res < 0) {
 					$this->output = $langs->trans('CantCreateDirectory');
 					return -4;
 				}
 			}
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH, '/').'/':'';
-			$TFiles = ftp_nlist($co, $downloadDir.'M41_*');
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_RECEIVING_SUPPLIERORDER_PATH, '/') . '/' : '';
+			$downloadDir = ltrim($downloadDir, '/');
+			$sftp = ssh2_sftp($co);
+			$sftp_fd = intval($sftp);
+			$TFiles = opendir("ssh2.sftp://" . $sftp_fd . "/" . $downloadDir);
 			if(!empty($TFiles)) {
-				foreach($TFiles as $file) {
-					$TPath = explode('/',$file);
-					if(ftp_get($co, $this->supplierOrderDir.end($TPath), $file, FTP_BINARY)) {
-						$db->begin();
-						$handle = fopen($this->supplierOrderDir.end($TPath), "r");
-						while(($data = fgetcsv($handle,0,';')) !== false) {
-							//Activité  = à revoir avec XPO ??
-							//Référence commande = numéro de commande fournisseur d’origine (ref commande fourn dans Dolibarr)
-							//Code interne du produit = référence du produit
-							//Nombre d'unités = quantité réceptionnée
-							//Nombre total d'U.V.C. réceptionnées = quantité total initialement commandée au fournisseur
-							//Unité de saisie
-							//Date de réception = date de réception
-							//code fournisseur = laisse vide
-							//numéro de lot
-							//DLUO
-							//DLC
-							$cmd = new CommandeFournisseur($db);
-							$cmd->fetch(0,$data[1]);
-							$prod = new Product($db);
-							$prod->fetch(0,$data[2]);
-							$lineToKeep = new CommandeFournisseurLigne($db);
-							foreach($cmd->lines as $line) {
-								if($line->fk_product == $prod->id && $line->qty ==  $data[4]) {
-									$lineToKeep = $line;
-									break;
-								}
-							}
-							if(!empty($data[9])) {
-								$date = DateTime::createFromFormat('Ymd', $data[9]);
-								$data[9] = $date->format('U');
-							}
-							if(!empty($data[10])) {
-								$date = DateTime::createFromFormat('Ymd', $data[10]);
-								$data[10] = $date->format('U');
-							}
-							$res = $cmd->dispatchProduct($user,$prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile',end($TPath)), $data[9], $data[10], $data[8], !empty($lineToKeep->id)?$lineToKeep->id:0, 0);
-							if($res < 0) {
-								$db->rollback();
-								$this->output = $langs->trans('CantDispatch', $data[1].' - '.$data[2]);
-								return -5;
-							} else {
-								if(!empty($data[6])) {
-									$date = DateTime::createFromFormat('Ymd', $data[6]);
-									$data[6] = $date->format('U');
-									$sql = "UPDATE ".MAIN_DB_PREFIX."commande_fournisseur_dispatch SET datec='".$cmd->db->idate($data[6])."' ORDER BY `rowid` DESC LIMIT 1";
-									$cmd->db->query($sql);
-									$sql = "UPDATE ".MAIN_DB_PREFIX."stock_mouvement SET datem='".$cmd->db->idate($data[6])."' ORDER BY `rowid` DESC LIMIT 1";
-									$cmd->db->query($sql);
-								}
+				while(($file = readdir($TFiles)) != false) {
+					if(substr($file, 0, 4) !== 'M41_') continue;
+					/*
+					 * Copy
+					 */
+					if(!$remote = @fopen("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}", 'r')) {
+						$this->output = $langs->trans('CantOpenRemoteFile');
+						return -6;
+					}
 
-								$xpo = new XPOConnectorSupplierOrder($cmd->ref);
-								if(!dol_is_dir($xpo->upload_dir)) {
-									$res = dol_mkdir($xpo->upload_dir);
-									if($res < 0){
-										setEventMessage($langs->trans('CantCreateDirectory'),'errors');
-										$db->rollback();
-										return -6;
-									}
-								}
-								dol_copy($this->supplierOrderDir.end($TPath), $xpo->upload_dir.'/'.end($TPath));
-							}
+					if(!$local = @fopen($this->supplierOrderDir . $file, 'w')) {
+						$this->output = $langs->trans('CantOpenLocalFile');
+						return -7;
+					}
 
-						}
-						if($res > 0) {
-							$db->commit();
-							$this->output = $langs->trans('FTPSucces', $file);
-							ftp_delete($co, $file);
-							return 0;
+					$read = 0;
+					$filesize = filesize("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}");
+					while($read < $filesize && ($buffer = fread($remote, $filesize - $read))) {
+						$read += strlen($buffer);
+						if(fwrite($local, $buffer) === false) {
+							$this->output = $langs->trans('CantWriteInLocalFile');
+							return -8;
 						}
 					}
-					else {
-						$this->output = $langs->trans('FTPGetError', $file);
-						return -3;
+					fclose($local);
+					fclose($remote);
+					/*
+					 * Fin de la copie
+					 */
+
+					$db->begin();
+					$handle = fopen($this->supplierOrderDir . $file, "r");
+					while(($data = fgetcsv($handle, 0, ';')) !== false) {
+						//Activité  = à revoir avec XPO ??
+						//Référence commande = numéro de commande fournisseur d’origine (ref commande fourn dans Dolibarr)
+						//Code interne du produit = référence du produit
+						//Nombre d'unités = quantité réceptionnée
+						//Nombre total d'U.V.C. réceptionnées = quantité total initialement commandée au fournisseur
+						//Unité de saisie
+						//Date de réception = date de réception
+						//code fournisseur = laisse vide
+						//numéro de lot
+						//DLUO
+						//DLC
+						$cmd = new CommandeFournisseur($db);
+						$cmd->fetch(0, $data[1]);
+						$prod = new Product($db);
+						$prod->fetch(0, $data[2]);
+						$lineToKeep = new CommandeFournisseurLigne($db);
+						foreach($cmd->lines as $line) {
+							if($line->fk_product == $prod->id && $line->qty == $data[4]) {
+								$lineToKeep = $line;
+								break;
+							}
+						}
+						if(!empty($data[9])) {
+							$date = DateTime::createFromFormat('Ymd', $data[9]);
+							$data[9] = $date->format('U');
+						}
+						if(!empty($data[10])) {
+							$date = DateTime::createFromFormat('Ymd', $data[10]);
+							$data[10] = $date->format('U');
+						}
+						$res = $cmd->dispatchProduct($user, $prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile', $file), $data[9], $data[10], $data[8], !empty($lineToKeep->id) ? $lineToKeep->id : 0, 0);
+						if($res < 0) {
+							$db->rollback();
+							$this->output = $langs->trans('CantDispatch', $data[1] . ' - ' . $data[2]);
+							return -5;
+						}
+						else {
+							if(!empty($data[6])) {
+								$date = DateTime::createFromFormat('Ymd', $data[6]);
+								$data[6] = $date->format('U');
+								$sql = "UPDATE " . MAIN_DB_PREFIX . "commande_fournisseur_dispatch SET datec='" . $cmd->db->idate($data[6]) . "' ORDER BY `rowid` DESC LIMIT 1";
+								$cmd->db->query($sql);
+								$sql = "UPDATE " . MAIN_DB_PREFIX . "stock_mouvement SET datem='" . $cmd->db->idate($data[6]) . "' ORDER BY `rowid` DESC LIMIT 1";
+								$cmd->db->query($sql);
+							}
+
+							$xpo = new XPOConnectorSupplierOrder($cmd->ref);
+							if(!dol_is_dir($xpo->upload_dir)) {
+								$res = dol_mkdir($xpo->upload_dir);
+								if($res < 0) {
+									$this->output =$langs->trans('CantCreateDirectory');
+									$db->rollback();
+									return -6;
+								}
+							}
+							dol_copy($this->supplierOrderDir . $file, $xpo->upload_dir . '/' . $file);
+						}
+					}
+					if($res > 0) {
+						if(!unlink("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}")) {
+							$this->output =$langs->trans('CantDeleteRemoteFile');
+							$db->rollback();
+							return -10;
+						}
+						$db->commit();
+						$this->output = $langs->trans('FTPSucces', $file);
+
+						return 0;
 					}
 				}
-			} else {
+			}
+			else {
 				$this->output = $langs->trans('FTPNoFile');
 				return -2;
 			}
-		} else {
+			unset($co); //close connection
+		}
+		else {
 			$this->output = $langs->trans('FTPConnectionError');
 			return -1;
 		}
@@ -298,36 +328,35 @@ class XPOConnector extends SeedObject
 
 class XPOConnectorProduct extends XPOConnector
 {
-	public function __construct($ref)
-	{
+	public function __construct($ref) {
 		$this->pref_filename = 'M30';
-		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/product/'.$ref;
+		$this->upload_dir = DOL_DATA_ROOT . '/xpoconnector/product/' . $ref;
 		$this->init();
 	}
 
-	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object'=>0),
-							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'ref'),
-							'Famille du produit' => array('max_length' => 10, 'from_object'=>0),
-							'Designation'=> array('max_length' => 60, 'from_object'=>1, 'object_field'=>'label'),
-							'Code EAN'=> array('max_length' => 17, 'from_object'=>0), //Non géré
-							'Par combien (PCB)'=> array('max_length' => 5, 'from_object'=>1, 'object_field'=>"array_options['options_prod_per_col']"),
-							'Unité de mesure'=> array('max_length' => 3, 'from_object'=>0),
-							'Poids brut de l UVC'=> array('max_length' => 7, 'from_object'=>0), //Non géré
-							'Poids net de l UVC'=> array('max_length' => 7, 'from_object'=>1, 'object_field'=>'weight'),
-							'Hauteur de l UVC'=> array('max_length' => 3, 'from_object'=>1, 'object_field'=>'height'),
-							'Longueur de l UVC'=> array('max_length' => 3, 'from_object'=>1, 'object_field'=>'length'),
-							'Largeur de l UVC'=> array('max_length' => 3,'from_object'=>1, 'object_field'=>'width'),
-							'Poids brut du colis'=> array('max_length' => 7, 'from_object'=>0), // Valeur calculée
-							'Hauteur du colis'=> array('max_length' => 3, 'from_object'=>0),
-							'Longueur du colis'=> array('max_length' => 3, 'from_object'=>0),
-							'Largeur du colis'=> array('max_length' => 3, 'from_object'=>0),
-							'Colis couche'=> array('max_length' => 8, 'from_object'=>0), //Non géré
-							'Couche par palette'=> array('max_length' => 8, 'from_object'=>0) //Non géré
-							);
+	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object' => 0),
+							'Code produit' => array('max_length' => 17, 'from_object' => 1, 'object_field' => 'ref'),
+							'Famille du produit' => array('max_length' => 10, 'from_object' => 0),
+							'Designation' => array('max_length' => 60, 'from_object' => 1, 'object_field' => 'label'),
+							'Code EAN' => array('max_length' => 17, 'from_object' => 0), //Non géré
+							'Par combien (PCB)' => array('max_length' => 5, 'from_object' => 1, 'object_field' => "array_options['options_prod_per_col']"),
+							'Unité de mesure' => array('max_length' => 3, 'from_object' => 0),
+							'Poids brut de l UVC' => array('max_length' => 7, 'from_object' => 0), //Non géré
+							'Poids net de l UVC' => array('max_length' => 7, 'from_object' => 1, 'object_field' => 'weight'),
+							'Hauteur de l UVC' => array('max_length' => 3, 'from_object' => 1, 'object_field' => 'height'),
+							'Longueur de l UVC' => array('max_length' => 3, 'from_object' => 1, 'object_field' => 'length'),
+							'Largeur de l UVC' => array('max_length' => 3, 'from_object' => 1, 'object_field' => 'width'),
+							'Poids brut du colis' => array('max_length' => 7, 'from_object' => 0), // Valeur calculée
+							'Hauteur du colis' => array('max_length' => 3, 'from_object' => 0),
+							'Longueur du colis' => array('max_length' => 3, 'from_object' => 0),
+							'Largeur du colis' => array('max_length' => 3, 'from_object' => 0),
+							'Colis couche' => array('max_length' => 8, 'from_object' => 0), //Non géré
+							'Couche par palette' => array('max_length' => 8, 'from_object' => 0) //Non géré
+	);
 
-	public static function send($object){
+	public static function send($object) {
 		global $conf;
-		if(!empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT) ) {
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_PRODUCT)) {
 			//Préparation du CSV
 			$xpoConnector = new XPOConnectorProduct($object->ref);
 			//TODO
@@ -338,7 +367,6 @@ class XPOConnectorProduct extends XPOConnector
 				$categ = new Categorie($object->db);
 				$TCategId = GETPOST('categories');
 				$action = GETPOST('action');
-
 
 				if($action == 'regenerateXPO') {
 					$TCateg = $categ->getListForItem($object->id, $type = 'product');
@@ -384,36 +412,35 @@ class XPOConnectorProduct extends XPOConnector
 			if($res < 0) return 0;
 
 			//Dépôt sur le FTP
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH, '/').'/':'';
-			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_PRODUCT_PATH, '/') . '/' : '';
+			$xpoConnector->moveFileToFTP($downloadDir . $xpoConnector->filename);
 		}
 	}
 }
 
 class XPOConnectorSupplierOrder extends XPOConnector
 {
-	public function __construct($ref)
-	{
+	public function __construct($ref) {
 		$this->pref_filename = 'M40';
-		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/supplierorder/'.$ref;
+		$this->upload_dir = DOL_DATA_ROOT . '/xpoconnector/supplierorder/' . $ref;
 		$this->init();
 	}
 
-	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object'=>0),
-							'Reference commande'=> array('max_length' => 30, 'from_object'=>1, 'object_field'=>'ref'),
-							'Date de reception prevue' => array('max_length' => 8, 'from_object'=>1,  'object_field'=>'date_reception_prevue'),
-							'Heure de reception prevue'=> array('max_length' => 4, 'from_object'=>0), //Non géré
-							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'product_ref'),
-							'Code du lot'=> array('max_length' => 20, 'from_object'=>0), //Non géré
-							'Nombre d unites reapprovisionnees'=> array('max_length' => 9, 'from_object'=>1, 'object_field'=>'qty'),
-							'Unite de saisie des quantites commandees'=> array('max_length' => 3, 'from_object'=>0),
-							'Message sur bon de reception'=> array('max_length' =>60, 'from_object'=>0), //Non géré
-							'Code fournisseur'=> array('max_length' => 0, 'from_object'=>0)//Non géré
+	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object' => 0),
+							'Reference commande' => array('max_length' => 30, 'from_object' => 1, 'object_field' => 'ref'),
+							'Date de reception prevue' => array('max_length' => 8, 'from_object' => 1, 'object_field' => 'date_reception_prevue'),
+							'Heure de reception prevue' => array('max_length' => 4, 'from_object' => 0), //Non géré
+							'Code produit' => array('max_length' => 17, 'from_object' => 1, 'object_field' => 'product_ref'),
+							'Code du lot' => array('max_length' => 20, 'from_object' => 0), //Non géré
+							'Nombre d unites reapprovisionnees' => array('max_length' => 9, 'from_object' => 1, 'object_field' => 'qty'),
+							'Unite de saisie des quantites commandees' => array('max_length' => 3, 'from_object' => 0),
+							'Message sur bon de reception' => array('max_length' => 60, 'from_object' => 0), //Non géré
+							'Code fournisseur' => array('max_length' => 0, 'from_object' => 0)//Non géré
 	);
 
-	public static function send($object){
+	public static function send($object) {
 		global $conf;
-		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER) ) {
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SUPPLIERORDER)) {
 			//Préparation du CSV
 			$xpoConnector = new XPOConnectorSupplierOrder($object->ref);
 			//TODO
@@ -425,9 +452,10 @@ class XPOConnectorSupplierOrder extends XPOConnector
 					$line->ref = $object->ref;
 					$line->fetch_optionals();
 
-					if(!empty($conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD) && !empty($line->array_options['options_'.$conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD])) {
-						$line->date_reception_prevue = date('Ymd',$line->array_options['options_'.$conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD]);
-					} else $line->date_reception_prevue = $object->date_livraison;
+					if(!empty($conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD) && !empty($line->array_options['options_' . $conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD])) {
+						$line->date_reception_prevue = date('Ymd', $line->array_options['options_' . $conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD]);
+					}
+					else $line->date_reception_prevue = $object->date_livraison;
 					//Génération du fichier CSV
 					$res = $xpoConnector->generateCSV($line);
 					if($res < 0) return 0;
@@ -435,43 +463,42 @@ class XPOConnectorSupplierOrder extends XPOConnector
 			}
 
 			//Dépôt sur le FTP
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH, '/').'/':'';
-			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SUPPLIERORDER_PATH, '/') . '/' : '';
+			$xpoConnector->moveFileToFTP($downloadDir . $xpoConnector->filename);
 		}
 	}
 }
 
 class XPOConnectorShipping extends XPOConnector
 {
-	public function __construct($ref)
-	{
+	public function __construct($ref) {
 		$this->pref_filename = 'M50';
-		$this->upload_dir = DOL_DATA_ROOT.'/xpoconnector/shipping/'.$ref;
+		$this->upload_dir = DOL_DATA_ROOT . '/xpoconnector/shipping/' . $ref;
 		$this->init();
 	}
 
-	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object'=>0),
-							'Reference livraison'=> array('max_length' => 30, 'from_object'=>1, 'object_field'=>'ref'),
-							'Reference commande destinataire' => array('max_length' => 30, 'from_object'=>0),
-							'Code client'=> array('max_length' => 14, 'from_object'=>0),
-							'Nom client'=> array('max_length' => 30, 'from_object'=>0),
-							'Adresse client'=> array('max_length' => 60, 'from_object'=>0),
-							'Code postal client'=> array('max_length' => 5, 'from_object'=>0),
-							'Ville client'=> array('max_length' => 26, 'from_object'=>0),
-							'Telephone client'=> array('max_length' => 20, 'from_object'=>0),
-							'Code pays client'=> array('max_length' => 3, 'from_object'=>0),
-							'Code produit'=> array('max_length' => 17, 'from_object'=>1, 'object_field'=>'product_ref'),
-							'Nombre UVC Commandees'=> array('max_length' => 9, 'from_object'=>1, 'object_field'=>'qty'),
-							'Unite de saisie'=> array('max_length' => 3, 'from_object'=>0),
-							'Code du lot'=> array('max_length' => 20, 'from_object'=>1, 'object_field'=>'batch_number'),
-							'Date de livraison'=> array('max_length' => 8, 'from_object'=>1, 'object_field'=>'delivery_date'),
-							'Message sur bon de preparation'=> array('max_length' =>60, 'from_object'=>0), //Non géré
-							'Message sur bon de livraison'=> array('max_length' => 60, 'from_object'=>0)//Non géré
+	public $TSchema = array('Activite' => array('max_length' => 3, 'from_object' => 0),
+							'Reference livraison' => array('max_length' => 30, 'from_object' => 1, 'object_field' => 'ref'),
+							'Reference commande destinataire' => array('max_length' => 30, 'from_object' => 0),
+							'Code client' => array('max_length' => 14, 'from_object' => 0),
+							'Nom client' => array('max_length' => 30, 'from_object' => 0),
+							'Adresse client' => array('max_length' => 60, 'from_object' => 0),
+							'Code postal client' => array('max_length' => 5, 'from_object' => 0),
+							'Ville client' => array('max_length' => 26, 'from_object' => 0),
+							'Telephone client' => array('max_length' => 20, 'from_object' => 0),
+							'Code pays client' => array('max_length' => 3, 'from_object' => 0),
+							'Code produit' => array('max_length' => 17, 'from_object' => 1, 'object_field' => 'product_ref'),
+							'Nombre UVC Commandees' => array('max_length' => 9, 'from_object' => 1, 'object_field' => 'qty'),
+							'Unite de saisie' => array('max_length' => 3, 'from_object' => 0),
+							'Code du lot' => array('max_length' => 20, 'from_object' => 1, 'object_field' => 'batch_number'),
+							'Date de livraison' => array('max_length' => 8, 'from_object' => 1, 'object_field' => 'delivery_date'),
+							'Message sur bon de preparation' => array('max_length' => 60, 'from_object' => 0), //Non géré
+							'Message sur bon de livraison' => array('max_length' => 60, 'from_object' => 0)//Non géré
 	);
 
-	public static function send($object){
+	public static function send($object) {
 		global $conf, $db, $langs;
-		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING) ) {
+		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING)) {
 			//Préparation du CSV
 			$xpoConnector = new XPOConnectorShipping($object->ref);
 
@@ -482,7 +509,7 @@ class XPOConnectorShipping extends XPOConnector
 				$commande = new Commande($db);
 				$commande->fetch($object->origin_id);
 				$xpoConnector->TSchema['Reference commande destinataire']['value'] = $commande->ref_client;
-				$TContactCommande = $commande->liste_contact(-1,'external',0,'SHIPPING');
+				$TContactCommande = $commande->liste_contact(-1, 'external', 0, 'SHIPPING');
 				if(!empty($TContactCommande)) {
 					$contact = new Contact($db);
 					$contact->fetch($TContactCommande[0]['id']);
@@ -508,7 +535,6 @@ class XPOConnectorShipping extends XPOConnector
 				$xpoConnector->TSchema['Code pays client']['value'] = $object->thirdparty->country_code;
 			}
 
-
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
 					$line->ref = $object->ref;
@@ -518,11 +544,11 @@ class XPOConnectorShipping extends XPOConnector
 						$orderline = new OrderLine($db);
 						$orderline->fetch($line->fk_origin_line);
 						$orderline->fetch_optionals();
-						if(!empty($orderline->array_options['options_'.$conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD])) {
-							$line->delivery_date = date('Ymd',$orderline->array_options['options_'.$conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD]);
+						if(!empty($orderline->array_options['options_' . $conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD])) {
+							$line->delivery_date = date('Ymd', $orderline->array_options['options_' . $conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD]);
 						}
 					}
-					if(empty($line->delivery_date)) $line->delivery_date = date('Ymd',$object->date_delivery);
+					if(empty($line->delivery_date)) $line->delivery_date = date('Ymd', $object->date_delivery);
 					//Génération du fichier CSV
 					if(!empty($line->detail_batch)) {
 						foreach($line->detail_batch as $detail_batch) {
@@ -530,14 +556,15 @@ class XPOConnectorShipping extends XPOConnector
 							$line->qty = $detail_batch->dluo_qty;
 							$res = $xpoConnector->generateCSV($line);
 						}
-					} else $res = $xpoConnector->generateCSV($line);
+					}
+					else $res = $xpoConnector->generateCSV($line);
 					if($res < 0) return 0;
 				}
 			}
 
 			//Dépôt sur le FTP
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH)?rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH, '/').'/':'';
-			$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
+			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH, '/') . '/' : '';
+			$xpoConnector->moveFileToFTP($downloadDir . $xpoConnector->filename);
 		}
 	}
 }
