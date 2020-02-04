@@ -88,8 +88,7 @@ class XPOConnector extends SeedObject
 			if(!empty($this->upload_path)) {
 				if($co = $this->connectFTP()) {
 					$sftp = ssh2_sftp($co);
-					//.tmp obligatoire pour le serveur ftp
-					if(ssh2_scp_send($co, $this->upload_path, $target_folder . '.tmp')) setEventMessage($langs->trans('FTPFileSuccess'));
+					if(ssh2_scp_send($co, $this->upload_path, $target_folder)) setEventMessage($langs->trans('FTPFileSuccess'));
 					else setEventMessage($langs->trans('FTPUploadError'), 'errors');
 
 //					ssh2_disconnect($co); //==> Ne fonctionne pas comme attendu, ça n'arrive pas à disconnect
