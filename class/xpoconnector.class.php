@@ -460,7 +460,7 @@ class XPOConnectorSupplierOrder extends XPOConnector
 							'Nombre d unites reapprovisionnees' => array('max_length' => 9, 'from_object' => 1, 'object_field' => 'qty'),
 							'Unite de saisie des quantites commandees' => array('max_length' => 3, 'from_object' => 0),
 							'Message sur bon de reception' => array('max_length' => 60, 'from_object' => 0), //Non géré
-							'Code fournisseur' => array('max_length' => 0, 'from_object' => 0)//Non géré
+							'Code fournisseur' => array('max_length' => 60, 'from_object' => 1, 'object_field' => 'code_fourn')
 	);
 
 	public static function send($object) {
@@ -471,10 +471,11 @@ class XPOConnectorSupplierOrder extends XPOConnector
 			//TODO
 			$xpoConnector->TSchema['Activite']['value'] = 'ACO';
 			$xpoConnector->TSchema['Unite de saisie des quantites commandees']['value'] = 'UVC';
-
+            if(empty($object->thirdparty)) $object->fetch_thirdparty();
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
 					$line->ref = $object->ref;
+					$line->code_fourn = $object->thirdparty->code_fournisseur;
 					$line->fetch_optionals();
 
 					if(!empty($conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD) && !empty($line->array_options['options_' . $conf->global->XPOCONNECTOR_SUPPLIERORDER_DATE_EXTRAFIELD])) {
