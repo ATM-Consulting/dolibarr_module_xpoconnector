@@ -130,7 +130,7 @@ class XPOConnector extends SeedObject
 			if(!dol_is_dir($this->orderDir)) {
 				$res = dol_mkdir($this->orderDir);
 				if($res < 0) {
-					$this->output = $langs->trans('CantCreateDirectory');
+					$this->output .= $langs->trans('CantCreateDirectory')."<br />";
 					return -4;
 				}
 			}
@@ -146,12 +146,12 @@ class XPOConnector extends SeedObject
 					 * Copie
 					 */
 					if(!$remote = @fopen("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}", 'r')) {
-						$this->output = $langs->trans('CantOpenRemoteFile');
+						$this->output .= $langs->trans('CantOpenRemoteFile')."<br />";
 						return -6;
 					}
 
 					if(!$local = @fopen($this->supplierOrderDir . $file, 'w')) {
-						$this->output = $langs->trans('CantOpenLocalFile');
+						$this->output .= $langs->trans('CantOpenLocalFile')."<br />";
 						return -7;
 					}
 
@@ -160,7 +160,7 @@ class XPOConnector extends SeedObject
 					while($read < $filesize && ($buffer = fread($remote, $filesize - $read))) {
 						$read += strlen($buffer);
 						if(fwrite($local, $buffer) === false) {
-							$this->output = $langs->trans('CantWriteInLocalFile');
+							$this->output .= $langs->trans('CantWriteInLocalFile')."<br />";
 							return -8;
 						}
 					}
@@ -186,28 +186,28 @@ class XPOConnector extends SeedObject
 							dol_copy($this->supplierOrderDir . $file, $xpo->upload_dir . '/' . $file);
 						}
 						else {
-							$this->output = $langs->trans('CantFetch', $data[1] . ' - ' . $data[2]);
+							$this->output .= $langs->trans('CantFetch', $data[1] . ' - ' . $data[2])."<br />";
 							return -5;
 						}
 					}
 					if(!unlink("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}")) {
-						$this->output = $langs->trans('CantDeleteRemoteFile');
+						$this->output .= $langs->trans('CantDeleteRemoteFile')."<br />";
 						return -10;
 					}
-
-					$this->output = $langs->trans('FTPSucces', $file);
-					return 0;
+                    $this->output .= $langs->trans('FTPSucces', $file)."<br />";
 				}
 			}
 			else {
-				$this->output = $langs->trans('FTPNoFile');
+				$this->output .= $langs->trans('FTPNoFile')."<br />";
 				return -2;
 			}
 		}
 		else {
-			$this->output = $langs->trans('FTPConnectionError');
+			$this->output .= $langs->trans('FTPConnectionError')."<br />";
 			return -1;
 		}
+
+        return 0;
 	}
 
 	/*
@@ -224,7 +224,7 @@ class XPOConnector extends SeedObject
 			if(!dol_is_dir($this->supplierOrderDir)) {
 				$res = dol_mkdir($this->supplierOrderDir);
 				if($res < 0) {
-					$this->output = $langs->trans('CantCreateDirectory');
+					$this->output .= $langs->trans('CantCreateDirectory')."<br />";
 					return -4;
 				}
 			}
@@ -240,12 +240,12 @@ class XPOConnector extends SeedObject
 					 * Copy
 					 */
 					if(!$remote = @fopen("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}", 'r')) {
-						$this->output = $langs->trans('CantOpenRemoteFile');
+						$this->output .= $langs->trans('CantOpenRemoteFile')."<br />";
 						return -6;
 					}
 
 					if(!$local = @fopen($this->supplierOrderDir . $file, 'w')) {
-						$this->output = $langs->trans('CantOpenLocalFile');
+						$this->output .= $langs->trans('CantOpenLocalFile')."<br />";
 						return -7;
 					}
 
@@ -254,7 +254,7 @@ class XPOConnector extends SeedObject
 					while($read < $filesize && ($buffer = fread($remote, $filesize - $read))) {
 						$read += strlen($buffer);
 						if(fwrite($local, $buffer) === false) {
-							$this->output = $langs->trans('CantWriteInLocalFile');
+							$this->output .= $langs->trans('CantWriteInLocalFile')."<br />";
 							return -8;
 						}
 					}
@@ -300,7 +300,7 @@ class XPOConnector extends SeedObject
 						$res = $cmd->dispatchProduct($user, $prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile', $file), $data[9], $data[10], $data[8], !empty($lineToKeep->id) ? $lineToKeep->id : 0, 0);
 						if($res < 0) {
 							$db->rollback();
-							$this->output = $langs->trans('CantDispatch', $data[1] . ' - ' . $data[2]);
+							$this->output .= $langs->trans('CantDispatch', $data[1] . ' - ' . $data[2])."<br />";
 							return -5;
 						}
 						else {
@@ -317,7 +317,7 @@ class XPOConnector extends SeedObject
 							if(!dol_is_dir($xpo->upload_dir)) {
 								$res = dol_mkdir($xpo->upload_dir);
 								if($res < 0) {
-									$this->output = $langs->trans('CantCreateDirectory');
+									$this->output .= $langs->trans('CantCreateDirectory')."<br />";
 									$db->rollback();
 									return -6;
 								}
@@ -327,27 +327,28 @@ class XPOConnector extends SeedObject
 					}
 					if($res > 0) {
 						if(!unlink("ssh2.sftp://{$sftp_fd}/{$downloadDir}{$file}")) {
-							$this->output = $langs->trans('CantDeleteRemoteFile');
+							$this->output .= $langs->trans('CantDeleteRemoteFile')."<br />";
 							$db->rollback();
 							return -10;
 						}
 						$db->commit();
-						$this->output = $langs->trans('FTPSucces', $file);
+						$this->output .= $langs->trans('FTPSucces', $file)."<br />";
 
-						return 0;
+
 					}
 				}
 			}
 			else {
-				$this->output = $langs->trans('FTPNoFile');
+				$this->output .= $langs->trans('FTPNoFile')."<br />";
 				return -2;
 			}
 			unset($co); //close connection
 		}
 		else {
-			$this->output = $langs->trans('FTPConnectionError');
+			$this->output .= $langs->trans('FTPConnectionError')."<br />";
 			return -1;
 		}
+        return 0;
 	}
 }
 
