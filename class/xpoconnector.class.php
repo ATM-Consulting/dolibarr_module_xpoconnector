@@ -475,6 +475,7 @@ class XPOConnectorSupplierOrder extends XPOConnector
             if(empty($object->thirdparty)) $object->fetch_thirdparty();
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
+				    if($line->product_type != 0) continue;
 					$line->ref = $object->ref;
 					$line->code_fourn = $object->thirdparty->code_fournisseur;
 					$line->fetch_optionals();
@@ -543,7 +544,7 @@ class XPOConnectorShipping extends XPOConnector
 					if(empty($contact->thirdparty)) $contact->fetch_thirdparty();
 					$xpoConnector->TSchema['Code client']['value'] = $contact->thirdparty->code_client;
 					$xpoConnector->TSchema['Nom client']['value'] = $contact->getFullName($langs);
-					$xpoConnector->TSchema['Adresse client']['value'] = $contact->address;
+					$xpoConnector->TSchema['Adresse client']['value'] = str_replace("\r\n",", ",$contact->address);
 					$xpoConnector->TSchema['Code postal client']['value'] = $contact->zip;
 					$xpoConnector->TSchema['Ville client']['value'] = $contact->town;
 					$xpoConnector->TSchema['Telephone client']['value'] = $contact->phone_pro;
@@ -555,7 +556,7 @@ class XPOConnectorShipping extends XPOConnector
 			if(empty($TContactCommande) && !empty($object->thirdparty)) {
 				$xpoConnector->TSchema['Code client']['value'] = $object->thirdparty->code_client;
 				$xpoConnector->TSchema['Nom client']['value'] = $object->thirdparty->nom;
-				$xpoConnector->TSchema['Adresse client']['value'] = $object->thirdparty->address;
+				$xpoConnector->TSchema['Adresse client']['value'] = str_replace("\r\n",", ",$object->thirdparty->address);
 				$xpoConnector->TSchema['Code postal client']['value'] = $object->thirdparty->zip;
 				$xpoConnector->TSchema['Ville client']['value'] = $object->thirdparty->town;
 				$xpoConnector->TSchema['Telephone client']['value'] = $object->thirdparty->phone;
@@ -564,7 +565,8 @@ class XPOConnectorShipping extends XPOConnector
 
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
-					$line->ref = $object->ref;
+                    if($line->product_type != 0) continue;
+                    $line->ref = $object->ref;
 					$line->fetch_optionals();
 
 					if(!empty($conf->global->XPOCONNECTOR_ORDER_DATE_EXTRAFIELD) && $line->fk_origin && !empty($line->fk_origin_line)) {
