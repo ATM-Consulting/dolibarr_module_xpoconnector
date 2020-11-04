@@ -565,6 +565,7 @@ class XPOConnectorShipping extends XPOConnector
 
 			if(!empty($object->lines)) {
 				foreach($object->lines as $line) {
+				    if($line->entrepot_id != $conf->global->XPOCONNECTOR_XPO_WAREHOUSE) continue;
                     if($line->product_type != 0) continue;
                     $line->ref = $object->ref;
 					$line->fetch_optionals();
