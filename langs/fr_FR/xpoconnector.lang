@@ -9,6 +9,9 @@ XPOConnectorAbout = A propos du module XPOConnector
 XPOConnector=Connecteur XPO
 AbricotNeedUpdate=Le module abricot doit être mis à jour
 
+# RIGHTS
+xpoconnector_read = Télécharger des documents XPO Connector
+
 # SETUP
 ParamLabel=Nom du paramètre
 ParamDesc=Une description si besoin
