@@ -107,7 +107,8 @@ class XPOConnector extends SeedObject
 		$ftp_port = (empty($conf->global->XPOCONNECTOR_FTP_PORT)) ? 21 : $conf->global->XPOCONNECTOR_FTP_PORT;
 		$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
 		$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
-		if(!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP))) {
+
+		if(!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && (in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP)) || empty($_SERVER['HTTP_HOST']))) {
 			if($co = ssh2_connect($ftp_host, $ftp_port)) {
 				if(ssh2_auth_password($co, $ftp_user, $ftp_pass)) {
 					return $co;
@@ -390,6 +391,7 @@ class XPOConnectorProduct extends XPOConnector
 			$xpoConnector->TSchema['Unité de mesure']['value'] = 'UVC';
 			//Categorie
 			if(!empty($conf->global->XPOCONNECTOR_PRODUCT_CATEGORY)) {
+				require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 				$categ = new Categorie($object->db);
 				$TCategId = GETPOST('categories');
 				$action = GETPOST('action');
