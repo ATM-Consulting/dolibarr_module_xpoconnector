@@ -526,6 +526,10 @@ class XPOConnectorShipping extends XPOConnector
 							'Message sur bon de livraison' => array('max_length' => 60, 'from_object' => 0)//Non géré
 	);
 
+	/**
+	 * @param Expedition $object
+	 * @return int
+	 */
 	public static function send($object) {
 		global $conf, $db, $langs;
 		if(!empty($conf->global->XPOCONNECTOR_ENABLE_SHIPPING)) {
@@ -582,6 +586,11 @@ class XPOConnectorShipping extends XPOConnector
 					}
 					if(empty($line->delivery_date)) $line->delivery_date = date('Ymd', $object->date_delivery);
 					//Génération du fichier CSV
+					if (empty($line->detail_batch)) {
+						// quand XPOConnectorShipping::send() est appelé lors de la clôture de l'expédition, les
+						// lots des lignes ne sont pas fetchés : il faut les fetcher explicitement
+						$line->detail_batch = ExpeditionLineBatch::fetchAll($db, $line->id, $line->fk_product);
+					}
 					if(!empty($line->detail_batch)) {
 						foreach($line->detail_batch as $detail_batch) {
 							$line->batch_number = $detail_batch->batch;
