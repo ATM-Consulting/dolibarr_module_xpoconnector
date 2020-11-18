@@ -107,7 +107,6 @@ class XPOConnector extends SeedObject
 		$ftp_port = (empty($conf->global->XPOCONNECTOR_FTP_PORT)) ? 21 : $conf->global->XPOCONNECTOR_FTP_PORT;
 		$ftp_user = (empty($conf->global->XPOCONNECTOR_FTP_USER)) ? "" : $conf->global->XPOCONNECTOR_FTP_USER;
 		$ftp_pass = (empty($conf->global->XPOCONNECTOR_FTP_PASS)) ? "" : $conf->global->XPOCONNECTOR_FTP_PASS;
-
 		if(!empty($conf->global->XPOCONNECTOR_HOST_SENDING_FTP) && (in_array($_SERVER['HTTP_HOST'], explode(';', $conf->global->XPOCONNECTOR_HOST_SENDING_FTP)) || empty($_SERVER['HTTP_HOST']))) {
 			if($co = ssh2_connect($ftp_host, $ftp_port)) {
 				if(ssh2_auth_password($co, $ftp_user, $ftp_pass)) {
@@ -151,7 +150,7 @@ class XPOConnector extends SeedObject
 						return -6;
 					}
 
-					if(!$local = @fopen($this->supplierOrderDir . $file, 'w')) {
+					if(!$local = @fopen($this->orderDir . $file, 'w')) {
 						$this->output .= $langs->trans('CantOpenLocalFile')."<br />";
 						return -7;
 					}
@@ -171,7 +170,7 @@ class XPOConnector extends SeedObject
 					 * Fin de la copie
 					 */
 
-					$handle = fopen($this->supplierOrderDir . $file, "r");
+					$handle = fopen($this->orderDir . $file, "r");
 					while(($data = fgetcsv($handle, 0, ';')) !== false) {
 						$exp = new Expedition($db);
 						$exp->fetch(0, $data[3]);
@@ -184,7 +183,7 @@ class XPOConnector extends SeedObject
 									return -6;
 								}
 							}
-							dol_copy($this->supplierOrderDir . $file, $xpo->upload_dir . '/' . $file);
+							dol_copy($this->orderDir . $file, $xpo->upload_dir . '/' . $file);
 						}
 						else {
 							$this->output .= $langs->trans('CantFetch', $data[1] . ' - ' . $data[2])."<br />";
