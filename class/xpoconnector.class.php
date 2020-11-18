@@ -21,7 +21,6 @@ if(!class_exists('SeedObject')) {
 	 */
 	define('INC_FROM_DOLIBARR', true);
 	require_once dirname(__FILE__) . '/../config.php';
-	dol_include_once('/core/lib/files.lib.php');
 }
 
 dol_include_once('/core/lib/files.lib.php');
