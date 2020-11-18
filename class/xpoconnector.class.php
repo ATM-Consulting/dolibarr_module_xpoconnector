@@ -297,6 +297,8 @@ class XPOConnector extends SeedObject
 							$date = DateTime::createFromFormat('Ymd', $data[10]);
 							$data[10] = $date->format('U');
 						}
+						//Si on a un numero de lot sans dluo on met 31/12/2900 (TK12201)
+						if(!empty($data[8]) && empty($data[9])) $data[9] = strtotime('2900-12-31');
 						$res = $cmd->dispatchProduct($user, $prod->id, $data[3], $conf->global->XPOCONNECTOR_XPO_WAREHOUSE, $lineToKeep->subprice, $langs->trans('ImportFromXPOFile', $file), $data[9], $data[10], $data[8], !empty($lineToKeep->id) ? $lineToKeep->id : 0, 0);
 						if($res < 0) {
 							$db->rollback();
@@ -553,6 +555,17 @@ class XPOConnectorShipping extends XPOConnector
 					$xpoConnector->TSchema['Ville client']['value'] = $contact->town;
 					$xpoConnector->TSchema['Telephone client']['value'] = $contact->phone_pro;
 					$xpoConnector->TSchema['Code pays client']['value'] = $contact->country_code;
+				}
+			}
+			if ($conf->livraison_bon->enabled) {
+				$object->fetchObjectLinked($object->id, $object->element);
+				if(is_array($object->linkedObjectsIds['delivery']) && count($object->linkedObjectsIds['delivery']) > 0)        // If there is a delivery
+				{
+					/**
+					 * @var $delivery Livraison
+					 */
+					$delivery = reset($object->linkedObjects['delivery']);
+					$xpoConnector->TSchema['Message sur bon de preparation']['value'] = $delivery->ref;
 				}
 			}
 
