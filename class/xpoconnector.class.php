@@ -24,6 +24,7 @@ if(!class_exists('SeedObject')) {
 	dol_include_once('/core/lib/files.lib.php');
 }
 
+dol_include_once('/core/lib/files.lib.php');
 
 class XPOConnector extends SeedObject
 {
@@ -390,6 +391,7 @@ class XPOConnectorProduct extends XPOConnector
 			$xpoConnector->TSchema['Unité de mesure']['value'] = 'UVC';
 			//Categorie
 			if(!empty($conf->global->XPOCONNECTOR_PRODUCT_CATEGORY)) {
+				require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 				$categ = new Categorie($object->db);
 				$TCategId = GETPOST('categories');
 				$action = GETPOST('action');
