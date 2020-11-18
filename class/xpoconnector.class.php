@@ -521,7 +521,7 @@ class XPOConnectorShipping extends XPOConnector
 							'Unite de saisie' => array('max_length' => 3, 'from_object' => 0),
 							'Code du lot' => array('max_length' => 20, 'from_object' => 1, 'object_field' => 'batch_number'),
 							'Date de livraison' => array('max_length' => 8, 'from_object' => 1, 'object_field' => 'delivery_date'),
-							'Message sur bon de preparation' => array('max_length' => 60, 'from_object' => 0), //Non géré
+							'Message sur bon de preparation' => array('max_length' => 60, 'from_object' => 0), //TK12201 => Num BL
 							'Message sur bon de livraison' => array('max_length' => 60, 'from_object' => 0)//Non géré
 	);
 
@@ -548,7 +548,6 @@ class XPOConnectorShipping extends XPOConnector
 					$contact->fetch($TContactCommande[0]['id']);
 					if(empty($contact->thirdparty)) $contact->fetch_thirdparty();
 					$xpoConnector->TSchema['Code client']['value'] = $contact->thirdparty->code_client;
-					$xpoConnector->TSchema['Nom client']['value'] = $contact->getFullName($langs);
 					$xpoConnector->TSchema['Adresse client']['value'] = str_replace("\r\n",", ",$contact->address);
 					$xpoConnector->TSchema['Code postal client']['value'] = $contact->zip;
 					$xpoConnector->TSchema['Ville client']['value'] = $contact->town;
@@ -558,14 +557,16 @@ class XPOConnectorShipping extends XPOConnector
 			}
 
 			if(empty($object->thirdparty)) $object->fetch_thirdparty();
-			if(empty($TContactCommande) && !empty($object->thirdparty)) {
-				$xpoConnector->TSchema['Code client']['value'] = $object->thirdparty->code_client;
-				$xpoConnector->TSchema['Nom client']['value'] = $object->thirdparty->nom;
-				$xpoConnector->TSchema['Adresse client']['value'] = str_replace("\r\n",", ",$object->thirdparty->address);
-				$xpoConnector->TSchema['Code postal client']['value'] = $object->thirdparty->zip;
-				$xpoConnector->TSchema['Ville client']['value'] = $object->thirdparty->town;
-				$xpoConnector->TSchema['Telephone client']['value'] = $object->thirdparty->phone;
-				$xpoConnector->TSchema['Code pays client']['value'] = $object->thirdparty->country_code;
+			if( !empty($object->thirdparty)) {
+				$xpoConnector->TSchema['Nom client']['value'] = $object->thirdparty->name;
+				if(empty($TContactCommande)) {
+					$xpoConnector->TSchema['Code client']['value'] = $object->thirdparty->code_client;
+					$xpoConnector->TSchema['Adresse client']['value'] = str_replace("\r\n", ", ", $object->thirdparty->address);
+					$xpoConnector->TSchema['Code postal client']['value'] = $object->thirdparty->zip;
+					$xpoConnector->TSchema['Ville client']['value'] = $object->thirdparty->town;
+					$xpoConnector->TSchema['Telephone client']['value'] = $object->thirdparty->phone;
+					$xpoConnector->TSchema['Code pays client']['value'] = $object->thirdparty->country_code;
+				}
 			}
 
 			if(!empty($object->lines)) {
@@ -589,6 +590,7 @@ class XPOConnectorShipping extends XPOConnector
 						// quand XPOConnectorShipping::send() est appelé lors de la clôture de l'expédition, les
 						// lots des lignes ne sont pas fetchés : il faut les fetcher explicitement
 						$line->detail_batch = ExpeditionLineBatch::fetchAll($db, $line->id, $line->fk_product);
+						if($line->detail_batch == -1) $line->detail_batch = array();
 					}
 					if(!empty($line->detail_batch)) {
 						foreach($line->detail_batch as $detail_batch) {
