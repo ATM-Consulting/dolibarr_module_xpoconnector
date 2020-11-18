@@ -603,8 +603,10 @@ class XPOConnectorShipping extends XPOConnector
 			}
 
 			//Dépôt sur le FTP
-			$downloadDir = !empty($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH, '/') . '/' : '';
-			$xpoConnector->moveFileToFTP($downloadDir . $xpoConnector->filename);
+			if(file_exists($xpoConnector->upload_path)) {
+				$downloadDir = ! empty($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH) ? rtrim($conf->global->XPOCONNECTOR_FTP_SENDING_SHIPPING_PATH, '/').'/' : '';
+				$xpoConnector->moveFileToFTP($downloadDir.$xpoConnector->filename);
+			}
 		}
 	}
 }
