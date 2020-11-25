@@ -282,6 +282,8 @@ class XPOConnector extends SeedObject
 						$cmd->fetch(0, $data[1]);
 						$prod = new Product($db);
 						$prod->fetch(0, $data[2]);
+						//Si on a un produit qui gère les lots mais pas de numéro de lot, alors on ignore la ligne sans rollback
+						if(!empty($prod->status_batch) && empty($data[8])) continue;
 						$lineToKeep = new CommandeFournisseurLigne($db);
 						foreach($cmd->lines as $line) {
 							if($line->fk_product == $prod->id && $line->qty == $data[4]) {
